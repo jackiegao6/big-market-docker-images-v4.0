@@ -187,6 +187,29 @@ services:
     networks:
       - my-network
 
+  logstash:
+    image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/logstash:7.17.14
+    container_name: logstash
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    ports:
+      - '4560:4560'
+      - '50000:50000/tcp'
+      - '50000:50000/udp'
+      - '9600:9600'
+    environment:
+      LS_JAVA_OPTS: -Xms1024m -Xmx1024m
+      TZ: Asia/Shanghai
+      MONITORING_ENABLED: false
+    links:
+      - elasticsearch:es # 可以用es这个域名访问elasticsearch服务
+    networks:
+      - my-network
+    depends_on:
+      - elasticsearch # 依赖elasticsearch启动后在启动logstash
+
   kibana:
     image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/kibana:7.17.14
     container_name: kibana

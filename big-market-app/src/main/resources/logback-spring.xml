@@ -97,6 +97,15 @@
         <appender-ref ref="ERROR_FILE"/>
     </appender>
 
+    <springProperty name="LOG_STASH_HOST" scope="context" source="logstash.host" defaultValue="192.168.31.25"/>
+
+    <!--输出到logstash的appender-->
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <!--可以访问的logstash日志收集端口-->
+        <destination>192.168.31.25:4560</destination>
+        <encoder charset="UTF-8" class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender>
+
 <!--    <appender name="Monitor" class="plus.gaga.monitor.sdk.appender.CustomAppender">-->
 <!--        <systemName>big-market</systemName>-->
 <!--        <groupId>cn.bugstack</groupId>-->
@@ -117,6 +126,8 @@
         <appender-ref ref="ASYNC_FILE_INFO"/>
         <!-- 异步日志-ERROR -->
         <appender-ref ref="ASYNC_FILE_ERROR"/>
+
+        <appender-ref ref="LOGSTASH"/>
     </root>
 
 </configuration>
