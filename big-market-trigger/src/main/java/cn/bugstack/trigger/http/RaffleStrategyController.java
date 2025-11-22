@@ -138,12 +138,12 @@ public class RaffleStrategyController implements IRaffleStrategyService {
 
     /**
      * 查询策略抽奖权重规则
-     * curl --request POST \
-     * --url http://localhost:8091/api/v1/raffle/strategy/query_raffle_strategy_rule_weight \
-     * --header 'content-type: application/json' \
+     * curl --request POST
+     * --url http://182.61.31.173:80/api/v1/raffle/strategy/query_raffle_strategy_rule_weight
+     * --header 'content-type: application/json'
      * --data '{
-     * "userId":"xiaofuge",
-     * "activityId": 100301
+     * "userId":"gzc",
+     * "activityId": 100401
      * }'
      */
 
@@ -171,6 +171,7 @@ public class RaffleStrategyController implements IRaffleStrategyService {
                     strategyAward.setAwardTitle(award.getAwardTitle());
                     strategyAwards.add(strategyAward);
                 }
+
                 // 封装对象
                 RaffleStrategyRuleWeightResponseDTO raffleStrategyRuleWeightResponseDTO = new RaffleStrategyRuleWeightResponseDTO();
                 raffleStrategyRuleWeightResponseDTO.setRuleWeightCount(ruleWeightVO.getWeight());
