@@ -8,6 +8,7 @@ import cn.bugstack.domain.award.model.entity.UserCreditAwardEntity;
 import cn.bugstack.domain.award.model.valobj.AccountStatusVO;
 import cn.bugstack.domain.award.repository.IAwardRepository;
 import cn.bugstack.infrastructure.dao.*;
+import cn.bugstack.infrastructure.elasticsearch.IElasticSearchUserRaffleOrderDao;
 import cn.bugstack.infrastructure.event.EventPublisher;
 import cn.bugstack.infrastructure.dao.po.Task;
 import cn.bugstack.infrastructure.dao.po.UserAwardRecord;
@@ -26,6 +27,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -55,6 +59,8 @@ public class AwardRepository implements IAwardRepository {
     private EventPublisher eventPublisher;
     @Resource
     private IRedisService redisService;
+    @Resource
+    private IElasticSearchUserRaffleOrderDao elasticSearchUserRaffleOrderDao;
 
     @Override
     public void saveUserAwardRecord(UserAwardRecordAggregate userAwardRecordAggregate) {
@@ -189,4 +195,22 @@ public class AwardRepository implements IAwardRepository {
         return awardDao.queryAwardKeyByAwardId(awardId);
     }
 
+
+    @Override
+    public List<UserAwardRecordEntity> queryRecentRaffleUser(Long activityId) {
+
+        List<cn.bugstack.infrastructure.elasticsearch.po.UserRaffleOrder> userRaffleOrders = elasticSearchUserRaffleOrderDao.queryUserRaffleOrderList();
+        ArrayList<UserAwardRecordEntity> res = new ArrayList<>();
+        for (cn.bugstack.infrastructure.elasticsearch.po.UserRaffleOrder userRaffleOrder : userRaffleOrders) {
+
+            UserAwardRecordEntity userAwardRecordEntity = UserAwardRecordEntity.builder()
+                        .userId(userRaffleOrder.getUserId())
+                        .activityId(userRaffleOrder.getActivityId())
+                        .strategyId(userRaffleOrder.getStrategyId())
+                        .orderId(userRaffleOrder.getOrderId())
+                        .build();
+            res.add(userAwardRecordEntity);
+        }
+        return res;
+    }
 }

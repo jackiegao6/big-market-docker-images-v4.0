@@ -482,4 +482,44 @@ public class RaffleActivityController implements IRaffleActivityService {
         }
     }
 
+    @Override
+    @RequestMapping(value = "queryRecentRaffleUsers", method = RequestMethod.GET)
+    public Response<List<OneHourRaffleUserListResponseDTO>> query1HRaffleUser(Long activityId) {
+        try{
+            log.info("查询过去1H参与活动用户开始 activityId:{}", activityId);
+            // 1. 参数校验
+            if (null == activityId) {
+                throw new AppException(ResponseCode.ILLEGAL_PARAMETER.getCode(), ResponseCode.ILLEGAL_PARAMETER.getInfo());
+            }
+
+            // 2. 业务逻辑 es聚合查询
+            List<UserAwardRecordEntity> userAwardRecordEntities = awardService.queryRecentRaffleUsers(activityId);
+            List<OneHourRaffleUserListResponseDTO> res = new ArrayList<>(10);
+            for (UserAwardRecordEntity userAwardRecordEntity : userAwardRecordEntities) {
+                OneHourRaffleUserListResponseDTO oneHourRaffleUserListResponseDTO = OneHourRaffleUserListResponseDTO.builder()
+                                .userId(userAwardRecordEntity.getUserId())
+                                .awardId(userAwardRecordEntity.getAwardId())
+                                .awardTitle(userAwardRecordEntity.getAwardTitle())
+                                .awardTime(userAwardRecordEntity.getAwardTime())
+                                .build();
+
+                res.add(oneHourRaffleUserListResponseDTO);
+            }
+            return Response.<List<OneHourRaffleUserListResponseDTO>>builder()
+                    .code(ResponseCode.SUCCESS.getCode())
+                    .info(ResponseCode.SUCCESS.getInfo())
+                    .data(res)
+                    .build();
+        } catch (AppException e) {
+            return Response.<List<OneHourRaffleUserListResponseDTO>>builder()
+                    .code(e.getCode())
+                    .info(e.getInfo())
+                    .build();
+        } catch (Exception e) {
+            return Response.<List<OneHourRaffleUserListResponseDTO>>builder()
+                    .code(ResponseCode.UN_ERROR.getCode())
+                    .info(ResponseCode.UN_ERROR.getInfo())
+                    .build();
+        }
+    }
 }

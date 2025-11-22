@@ -7,9 +7,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * @author Fuzhengwei bugstack.cn @小傅哥
+ * @author gzc
  * @description 抽奖活动服务
- * @create 2024-04-13 09:16
  */
 public interface IRaffleActivityService {
 
@@ -76,5 +75,8 @@ public interface IRaffleActivityService {
      * @return 兑换结果
      */
     Response<Boolean> creditPayExchangeSku(SkuProductShopCartRequestDTO request);
+
+
+    Response<List<OneHourRaffleUserListResponseDTO>> query1HRaffleUser(Long activityId);
 
 }
