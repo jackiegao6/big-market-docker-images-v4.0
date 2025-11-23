@@ -29,14 +29,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author Fuzhengwei bugstack.cn @小傅哥
- * @description 奖品仓储服务
- * @create 2024-04-06 10:09
+ * @author gzc
  */
 @Slf4j
 @Component
@@ -60,8 +57,6 @@ public class AwardRepository implements IAwardRepository {
     private EventPublisher eventPublisher;
     @Resource
     private IRedisService redisService;
-    @Resource
-    private IElasticSearchUserRaffleOrderDao elasticSearchUserRaffleOrderDao;
 
     @Resource
     private IElasticSearchUserAwardRecordDao elasticSearchUserAwardRecordDao;
@@ -202,7 +197,7 @@ public class AwardRepository implements IAwardRepository {
 
     @Override
     public List<UserAwardRecordEntity> queryRecentRaffleUser(Long activityId) {
-        List<cn.bugstack.infrastructure.elasticsearch.po.UserAwardRecord> userAwardRecords = elasticSearchUserAwardRecordDao.queryUserAwardRecordList();
+        List<cn.bugstack.infrastructure.elasticsearch.po.UserAwardRecord> userAwardRecords = elasticSearchUserAwardRecordDao.queryUserAwardRecordList(String.valueOf(activityId));
         ArrayList<UserAwardRecordEntity> res = new ArrayList<>();
         for (cn.bugstack.infrastructure.elasticsearch.po.UserAwardRecord userAwardRecord : userAwardRecords) {
             UserAwardRecordEntity userAwardRecordEntity = UserAwardRecordEntity.builder()

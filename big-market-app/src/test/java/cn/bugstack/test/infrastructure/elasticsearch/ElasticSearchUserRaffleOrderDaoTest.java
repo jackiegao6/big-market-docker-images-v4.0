@@ -33,7 +33,7 @@ public class ElasticSearchUserRaffleOrderDaoTest {
 
     @Test
     public void test_queryUserAwardRecordList() {
-        List<UserAwardRecord> userAwardRecords = elasticSearchUserAwardRecordDao.queryUserAwardRecordList();
+        List<UserAwardRecord> userAwardRecords = elasticSearchUserAwardRecordDao.queryUserAwardRecordList("100401");
         log.info("测试结果：{}", JSON.toJSONString(userAwardRecords));
     }
 

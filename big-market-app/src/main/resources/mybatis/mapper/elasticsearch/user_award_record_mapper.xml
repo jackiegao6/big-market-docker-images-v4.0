@@ -17,10 +17,11 @@
 
     </resultMap>
 
-    <select id="queryUserAwardRecordList" resultMap="dataMap">
+    <select id="queryUserAwardRecordList" parameterType="java.lang.String" resultMap="dataMap">
         select _user_id,_activity_id,_strategy_id,_order_id,_award_id,_award_title,
             _award_time,_award_state,_create_time,_update_time
         from "big_market.user_award_record"
+            where _activity_id = #{activityId}
         order by _update_time
         limit 10
     </select>
