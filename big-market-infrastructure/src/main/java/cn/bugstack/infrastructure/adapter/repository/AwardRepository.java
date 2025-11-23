@@ -202,15 +202,14 @@ public class AwardRepository implements IAwardRepository {
 
     @Override
     public List<UserAwardRecordEntity> queryRecentRaffleUser(Long activityId) {
-
         List<cn.bugstack.infrastructure.elasticsearch.po.UserAwardRecord> userAwardRecords = elasticSearchUserAwardRecordDao.queryUserAwardRecordList();
         ArrayList<UserAwardRecordEntity> res = new ArrayList<>();
         for (cn.bugstack.infrastructure.elasticsearch.po.UserAwardRecord userAwardRecord : userAwardRecords) {
             UserAwardRecordEntity userAwardRecordEntity = UserAwardRecordEntity.builder()
                     .userId(userAwardRecord.getUserId())
-                    .activityId(userAwardRecord.getActivityId())
-                    .strategyId(userAwardRecord.getStrategyId())
-                    .orderId(userAwardRecord.getOrderId())
+                    .awardId(userAwardRecord.getAwardId())
+                    .awardTitle(userAwardRecord.getAwardTitle())
+                    .awardTime(userAwardRecord.getUpdateTime())
                     .build();
             res.add(userAwardRecordEntity);
         }
