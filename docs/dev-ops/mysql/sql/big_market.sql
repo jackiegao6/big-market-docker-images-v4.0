@@ -61,12 +61,13 @@ UNLOCK TABLES;
 
 # 转储表 daily_behavior_rebate
 # ------------------------------------------------------------
-
+use `big_market`;
 DROP TABLE IF EXISTS `daily_behavior_rebate`;
 
 CREATE TABLE `daily_behavior_rebate` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增ID',
   `behavior_type` varchar(16) NOT NULL COMMENT '行为类型（sign 签到、openai_pay 支付）',
+  `activity_id` varchar(16) NOT NULL COMMENT '活动id',
   `rebate_desc` varchar(128) NOT NULL COMMENT '返利描述',
   `rebate_type` varchar(16) NOT NULL COMMENT '返利类型（sku 活动库存充值商品、integral 用户活动积分）',
   `rebate_config` varchar(32) NOT NULL COMMENT '返利配置',
@@ -80,10 +81,10 @@ CREATE TABLE `daily_behavior_rebate` (
 LOCK TABLES `daily_behavior_rebate` WRITE;
 /*!40000 ALTER TABLE `daily_behavior_rebate` DISABLE KEYS */;
 
-INSERT INTO `daily_behavior_rebate` (`id`, `behavior_type`, `rebate_desc`, `rebate_type`, `rebate_config`, `state`, `create_time`, `update_time`)
+INSERT INTO `daily_behavior_rebate` (`id`, `behavior_type`, `activity_id`, `rebate_desc`, `rebate_type`, `rebate_config`, `state`, `create_time`, `update_time`)
 VALUES
-	(1,'sign','签到返利-sku额度','sku','9014','open','2024-04-30 09:32:46','2024-06-22 09:52:39'),
-	(2,'sign','签到返利-积分','integral','10','open','2024-04-30 09:32:46','2024-04-30 18:05:27');
+	(1,'sign','100301','签到返利-sku额度','sku','9014','open','2024-04-30 09:32:46','2024-06-22 09:52:39'),
+	(2,'sign','100301','签到返利-积分','integral','10','open','2024-04-30 09:32:46','2024-04-30 18:05:27');
 
 /*!40000 ALTER TABLE `daily_behavior_rebate` ENABLE KEYS */;
 UNLOCK TABLES;

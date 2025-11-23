@@ -16,6 +16,8 @@ public class DailyBehaviorRebate {
     private Long id;
     /** 行为类型（sign 签到、openai_pay 支付） */
     private String behaviorType;
+
+    private String activityId;
     /** 返利描述 */
     private String rebateDesc;
     /** 返利类型（sku 活动库存充值商品、integral 用户活动积分） */
