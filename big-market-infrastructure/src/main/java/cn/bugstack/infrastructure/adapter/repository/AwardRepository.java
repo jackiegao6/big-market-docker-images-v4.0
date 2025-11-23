@@ -8,6 +8,7 @@ import cn.bugstack.domain.award.model.entity.UserCreditAwardEntity;
 import cn.bugstack.domain.award.model.valobj.AccountStatusVO;
 import cn.bugstack.domain.award.repository.IAwardRepository;
 import cn.bugstack.infrastructure.dao.*;
+import cn.bugstack.infrastructure.elasticsearch.IElasticSearchUserAwardRecordDao;
 import cn.bugstack.infrastructure.elasticsearch.IElasticSearchUserRaffleOrderDao;
 import cn.bugstack.infrastructure.event.EventPublisher;
 import cn.bugstack.infrastructure.dao.po.Task;
@@ -61,6 +62,9 @@ public class AwardRepository implements IAwardRepository {
     private IRedisService redisService;
     @Resource
     private IElasticSearchUserRaffleOrderDao elasticSearchUserRaffleOrderDao;
+
+    @Resource
+    private IElasticSearchUserAwardRecordDao elasticSearchUserAwardRecordDao;
 
     @Override
     public void saveUserAwardRecord(UserAwardRecordAggregate userAwardRecordAggregate) {
@@ -199,16 +203,15 @@ public class AwardRepository implements IAwardRepository {
     @Override
     public List<UserAwardRecordEntity> queryRecentRaffleUser(Long activityId) {
 
-        List<cn.bugstack.infrastructure.elasticsearch.po.UserRaffleOrder> userRaffleOrders = elasticSearchUserRaffleOrderDao.queryUserRaffleOrderList();
+        List<cn.bugstack.infrastructure.elasticsearch.po.UserAwardRecord> userAwardRecords = elasticSearchUserAwardRecordDao.queryUserAwardRecordList();
         ArrayList<UserAwardRecordEntity> res = new ArrayList<>();
-        for (cn.bugstack.infrastructure.elasticsearch.po.UserRaffleOrder userRaffleOrder : userRaffleOrders) {
-
+        for (cn.bugstack.infrastructure.elasticsearch.po.UserAwardRecord userAwardRecord : userAwardRecords) {
             UserAwardRecordEntity userAwardRecordEntity = UserAwardRecordEntity.builder()
-                        .userId(userRaffleOrder.getUserId())
-                        .activityId(userRaffleOrder.getActivityId())
-                        .strategyId(userRaffleOrder.getStrategyId())
-                        .orderId(userRaffleOrder.getOrderId())
-                        .build();
+                    .userId(userAwardRecord.getUserId())
+                    .activityId(userAwardRecord.getActivityId())
+                    .strategyId(userAwardRecord.getStrategyId())
+                    .orderId(userAwardRecord.getOrderId())
+                    .build();
             res.add(userAwardRecordEntity);
         }
         return res;

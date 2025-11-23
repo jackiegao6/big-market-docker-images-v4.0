@@ -1,5 +1,6 @@
 package cn.bugstack.infrastructure.elasticsearch;
 
+import cn.bugstack.infrastructure.elasticsearch.po.UserAwardRecord;
 import cn.bugstack.infrastructure.elasticsearch.po.UserRaffleOrder;
 import org.apache.ibatis.annotations.Mapper;
 

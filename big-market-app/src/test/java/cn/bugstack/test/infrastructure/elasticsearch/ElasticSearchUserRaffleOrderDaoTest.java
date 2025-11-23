@@ -1,6 +1,8 @@
 package cn.bugstack.test.infrastructure.elasticsearch;
 
+import cn.bugstack.infrastructure.elasticsearch.IElasticSearchUserAwardRecordDao;
 import cn.bugstack.infrastructure.elasticsearch.IElasticSearchUserRaffleOrderDao;
+import cn.bugstack.infrastructure.elasticsearch.po.UserAwardRecord;
 import cn.bugstack.infrastructure.elasticsearch.po.UserRaffleOrder;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
@@ -20,10 +22,19 @@ public class ElasticSearchUserRaffleOrderDaoTest {
     @Resource
     private IElasticSearchUserRaffleOrderDao elasticSearchUserRaffleOrderDao;
 
+    @Resource
+    private IElasticSearchUserAwardRecordDao elasticSearchUserAwardRecordDao;
+
     @Test
     public void test_queryUserRaffleOrderList() {
         List<UserRaffleOrder> userRaffleOrders = elasticSearchUserRaffleOrderDao.queryUserRaffleOrderList();
         log.info("测试结果：{}", JSON.toJSONString(userRaffleOrders));
+    }
+
+    @Test
+    public void test_queryUserAwardRecordList() {
+        List<UserAwardRecord> userAwardRecords = elasticSearchUserAwardRecordDao.queryUserAwardRecordList();
+        log.info("测试结果：{}", JSON.toJSONString(userAwardRecords));
     }
 
 }
