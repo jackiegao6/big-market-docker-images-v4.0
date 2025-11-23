@@ -17,7 +17,7 @@
     <select id="queryDailyBehaviorRebateByBehaviorType" parameterType="cn.bugstack.infrastructure.dao.po.DailyBehaviorRebate" resultMap="dataMap">
         select behavior_type, activity_id, rebate_desc, rebate_type, rebate_config
         from daily_behavior_rebate
-        where state = 'open' and activity_id = #{activityId}
+        where state = 'open'
     </select>
 
 </mapper>
