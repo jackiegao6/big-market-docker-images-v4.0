@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface IElasticSearchUserAwardRecordDao {
 
-    List<UserAwardRecord> queryUserAwardRecordList(String activityId);
+    List<UserAwardRecord> queryUserAwardRecordList();
 
 }
