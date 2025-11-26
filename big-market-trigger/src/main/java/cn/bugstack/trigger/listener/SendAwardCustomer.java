@@ -3,7 +3,6 @@ package cn.bugstack.trigger.listener;
 import cn.bugstack.domain.award.event.SendAwardMessageEvent;
 import cn.bugstack.domain.award.model.entity.DistributeAwardEntity;
 import cn.bugstack.domain.award.service.IAwardService;
-import cn.bugstack.domain.rebate.event.SendRebateMessageEvent;
 import cn.bugstack.types.event.BaseEvent;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
@@ -12,7 +11,6 @@ import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
 
@@ -37,16 +35,20 @@ public class SendAwardCustomer {
             BaseEvent.EventMessage<SendAwardMessageEvent.SendAwardMessage> eventMessage = JSON.parseObject(message, new TypeReference<BaseEvent.EventMessage<SendAwardMessageEvent.SendAwardMessage>>() {
             }.getType());
             SendAwardMessageEvent.SendAwardMessage sendAwardMessage = eventMessage.getData();
+            Integer awardId = sendAwardMessage.getAwardId();
+            if (awardId == 101){
+                // 发放奖品
+                DistributeAwardEntity distributeAwardEntity = new DistributeAwardEntity();
+                distributeAwardEntity.setUserId(sendAwardMessage.getUserId());
+                distributeAwardEntity.setOrderId(sendAwardMessage.getOrderId());
+                distributeAwardEntity.setAwardId(sendAwardMessage.getAwardId());
+                distributeAwardEntity.setAwardConfig(sendAwardMessage.getAwardConfig());
+                awardService.distributeAward(distributeAwardEntity);
 
-            // 发放奖品
-            DistributeAwardEntity distributeAwardEntity = new DistributeAwardEntity();
-            distributeAwardEntity.setUserId(sendAwardMessage.getUserId());
-            distributeAwardEntity.setOrderId(sendAwardMessage.getOrderId());
-            distributeAwardEntity.setAwardId(sendAwardMessage.getAwardId());
-            distributeAwardEntity.setAwardConfig(sendAwardMessage.getAwardConfig());
-            awardService.distributeAward(distributeAwardEntity);
-
-            log.info("监听用户奖品发送消息，发奖完成 topic: {} message: {}", topic, message);
+                log.info("监听用户奖品发送消息，发奖完成 topic: {} message: {}", topic, message);
+            }else {
+                log.info("暂未配置发奖服务 topic: {} message: {}", topic, message);
+            }
         } catch (Exception e) {
             log.error("监听用户奖品发送消息，消费失败 topic: {} message: {}", topic, message);
 //            throw e;
