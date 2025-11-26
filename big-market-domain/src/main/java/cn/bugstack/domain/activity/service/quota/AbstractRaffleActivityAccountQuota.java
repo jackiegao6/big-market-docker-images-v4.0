@@ -48,7 +48,7 @@ public abstract class AbstractRaffleActivityAccountQuota extends RaffleActivityA
             if (null != unpaidCreditOrder) return unpaidCreditOrder;
         }
 
-        // 3. 查询基础信息「sku、活动、次数」
+        // 3. 查询基础信息「sku、活动、次数」 一个活动对应一个sku
         ActivitySkuEntity activitySkuEntity = queryActivitySku(sku);
         ActivityEntity activityEntity = queryRaffleActivityByActivityId(activitySkuEntity.getActivityId());
         ActivityCountEntity activityCountEntity = queryRaffleActivityCountByActivityCountId(activitySkuEntity.getActivityCountId());

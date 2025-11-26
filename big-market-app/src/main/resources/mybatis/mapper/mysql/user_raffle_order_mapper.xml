@@ -24,6 +24,28 @@
         )
     </insert>
 
+
+    <insert id="insertTen">
+        INSERT INTO user_raffle_order (
+        user_id, activity_id, activity_name, strategy_id,
+        order_id, order_time, order_state, create_time, update_time
+        )
+        VALUES
+        <foreach collection="orderIds" item="orderId" separator=",">
+            (
+            #{user.userId},
+            #{user.activityId},
+            #{user.activityName},
+            #{user.strategyId},
+            #{orderId},
+            #{user.orderTime},
+            #{user.orderState},
+            now(),
+            now()
+            )
+        </foreach>
+    </insert>
+
     <select id="queryNoUsedRaffleOrder" parameterType="cn.bugstack.infrastructure.dao.po.UserRaffleOrder" resultMap="dataMap">
         select user_id, activity_id, activity_name, strategy_id, order_id, order_time, order_state
         from user_raffle_order

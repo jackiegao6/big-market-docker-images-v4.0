@@ -44,6 +44,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @author gzc
@@ -76,6 +78,8 @@ public class RaffleActivityController implements IRaffleActivityService {
     private IBehaviorRebateService behaviorRebateService;
     @Resource
     private ICreditAdjustService creditAdjustService;
+    @Resource
+    private ThreadPoolExecutor executor;
 
     // dcc 统一配置中心动态配置降级开关
     @DCCValue("degradeSwitch:close")
@@ -166,11 +170,6 @@ public class RaffleActivityController implements IRaffleActivityService {
                         .build();
             }
 
-            // 2. 参数校验
-            if (StringUtils.isBlank(request.getUserId()) || null == request.getActivityId()) {
-                throw new AppException(ResponseCode.ILLEGAL_PARAMETER.getCode(), ResponseCode.ILLEGAL_PARAMETER.getInfo());
-            }
-
             // 3. 参与活动 - 创建参与记录订单
             UserRaffleOrderEntity orderEntity = raffleActivityPartakeService.createOrder(request.getUserId(), request.getActivityId());
 
@@ -215,6 +214,94 @@ public class RaffleActivityController implements IRaffleActivityService {
         } catch (Exception e) {
             log.error("活动抽奖失败 userId:{} activityId:{}", request.getUserId(), request.getActivityId(), e);
             return Response.<ActivityDrawResponseDTO>builder()
+                    .code(ResponseCode.UN_ERROR.getCode())
+                    .info(ResponseCode.UN_ERROR.getInfo())
+                    .build();
+        }
+    }
+
+    @RateLimiterAccessInterceptor(key = "userId", fallbackMethod = "drawRateLimiterError", permitsPerSecond = 1.0d, blacklistCount = 1)
+    @HystrixCommand(commandProperties = {
+            @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "150")
+    }, fallbackMethod = "drawHystrixError"
+    )
+    @RequestMapping(value = "drawTen", method = RequestMethod.POST)
+    @Override
+    public Response<List<ActivityDrawResponseDTO>> drawTen(@RequestBody ActivityDrawRequestDTO request) {
+        try {
+            // 0. 参数校验
+            if (StringUtils.isBlank(request.getUserId()) || null == request.getActivityId()) {
+                throw new AppException(ResponseCode.ILLEGAL_PARAMETER.getCode(), ResponseCode.ILLEGAL_PARAMETER.getInfo());
+            }
+
+            // 1. 降级开关【open 开启、close 关闭】
+            if (StringUtils.isNotBlank(degradeSwitch) && "open".equals(degradeSwitch)) {
+                return Response.<List<ActivityDrawResponseDTO>>builder()
+                        .code(ResponseCode.DEGRADE_SWITCH.getCode())
+                        .info(ResponseCode.DEGRADE_SWITCH.getInfo())
+                        .build();
+            }
+
+            // 3. 参与活动 - 创建参与记录订单
+            UserTenRaffleOrderEntity tenOrders = raffleActivityPartakeService.createTenOrders(request.getUserId(), request.getActivityId());
+            // 3. 参与活动 - 创建参与记录订单
+            UserTenRaffleOrderEntity tenRaffleOrderEntity = raffleActivityPartakeService.createTenOrders(request.getUserId(), request.getActivityId());
+
+            // 3. 抽奖策略 - 执行抽奖
+            List<RaffleAwardEntity> raffleAwardEntities = new ArrayList<>();
+            List<Callable<RaffleAwardEntity>> tasks = new ArrayList<>(); // 任务列表
+            for (int i = 0; i < 10; i++) {
+                final int index = i;
+                tasks.add(() -> {
+                    RaffleAwardEntity raffleAwardEntity = raffleStrategy.performRaffle(RaffleFactorEntity.builder()
+                            .userId(tenRaffleOrderEntity.getUserId())
+                            .strategyId(tenRaffleOrderEntity.getStrategyId())
+                            .endDateTime(tenRaffleOrderEntity.getEndDateTime())
+                            .build());
+                    raffleAwardEntities.add(raffleAwardEntity);
+                    // 4. 存放结果 - 写入中奖记录
+                    UserAwardRecordEntity userAwardRecord = UserAwardRecordEntity.builder()
+                            .userId(tenRaffleOrderEntity.getUserId())
+                            .activityId(tenRaffleOrderEntity.getActivityId())
+                            .strategyId(tenRaffleOrderEntity.getStrategyId())
+                            .orderId(tenRaffleOrderEntity.getOrderIds().get(index))
+                            .awardId(raffleAwardEntity.getAwardId())
+                            .awardTitle(raffleAwardEntity.getAwardTitle())
+                            .awardTime(new Date())
+                            .awardState(AwardStateVO.create)
+                            .awardConfig(raffleAwardEntity.getAwardConfig())
+                            .build();
+                    awardService.saveUserAwardRecord(userAwardRecord);
+                    return null; // 返回结果
+                });
+            }
+            executor.invokeAll(tasks);
+
+            List<ActivityDrawResponseDTO> res = new ArrayList<>();
+            for (RaffleAwardEntity raffleAwardEntity : raffleAwardEntities) {
+                ActivityDrawResponseDTO ele = ActivityDrawResponseDTO.builder()
+                        .awardId(raffleAwardEntity.getAwardId())
+                        .awardTitle(raffleAwardEntity.getAwardTitle())
+                        .awardIndex(raffleAwardEntity.getSort())
+                        .build();
+                res.add(ele);
+            }
+
+            // 6. 返回结果
+            return Response.<List<ActivityDrawResponseDTO>>builder()
+                    .code(ResponseCode.SUCCESS.getCode())
+                    .info(ResponseCode.SUCCESS.getInfo())
+                    .data(res)
+                    .build();
+        } catch (AppException e) {
+            log.error("活动抽奖失败 userId:{} activityId:{}", request.getUserId(), request.getActivityId(), e);
+            return Response.<List<ActivityDrawResponseDTO>>builder()
+                    .code(e.getCode())
+                    .info(e.getInfo())
+                    .build();
+        } catch (Exception e) {
+            log.error("活动抽奖失败 userId:{} activityId:{}", request.getUserId(), request.getActivityId(), e);
+            return Response.<List<ActivityDrawResponseDTO>>builder()
                     .code(ResponseCode.UN_ERROR.getCode())
                     .info(ResponseCode.UN_ERROR.getInfo())
                     .build();

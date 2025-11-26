@@ -29,6 +29,14 @@ public interface IRaffleActivityService {
     Response<ActivityDrawResponseDTO> draw(ActivityDrawRequestDTO request);
 
     /**
+     * 活动十次抽奖接口
+     *
+     * @param request 请求对象
+     * @return 返回结果
+     */
+    Response<List<ActivityDrawResponseDTO>> drawTen(ActivityDrawRequestDTO request);
+
+    /**
      * 日历签到返利接口
      *
      * @param userId 用户ID

@@ -10,7 +10,9 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author Fuzhengwei bugstack.cn @小傅哥
@@ -42,7 +44,7 @@ public class RaffleActivityPartakeService extends AbstractRaffleActivityPartake{
 
         // 查询月账户额度
         ActivityAccountMonthEntity activityAccountMonthEntity = activityRepository.queryActivityAccountMonthByUserId(userId, activityId, month);
-        if (null != activityAccountMonthEntity && activityAccountMonthEntity.getMonthCountSurplus() <= 0) {
+        if (null != activityAccountMonthEntity && activityAccountMonthEntity.getMonthCountSurplus() < 1) {
             throw new AppException(ResponseCode.ACCOUNT_MONTH_QUOTA_ERROR.getCode(), ResponseCode.ACCOUNT_MONTH_QUOTA_ERROR.getInfo());
         }
 
@@ -88,6 +90,66 @@ public class RaffleActivityPartakeService extends AbstractRaffleActivityPartake{
     }
 
     @Override
+    protected CreatePartakeOrderAggregate doFilterAccountTen(String userId, Long activityId, Date currentDate) {
+        // 查询总账户额度
+        ActivityAccountEntity activityAccountEntity = activityRepository.queryActivityAccountByUserId(userId, activityId);
+
+        // 额度判断（只判断总剩余额度）
+        if (null == activityAccountEntity || activityAccountEntity.getTotalCountSurplus() < 10) {
+            throw new AppException(ResponseCode.ACCOUNT_QUOTA_10_ERROR.getCode(), ResponseCode.ACCOUNT_QUOTA_10_ERROR.getInfo());
+        }
+
+        String month = dateFormatMonth.format(currentDate);
+        String day = dateFormatDay.format(currentDate);
+
+        // 查询月账户额度
+        ActivityAccountMonthEntity activityAccountMonthEntity = activityRepository.queryActivityAccountMonthByUserId(userId, activityId, month);
+        if (null != activityAccountMonthEntity && activityAccountMonthEntity.getMonthCountSurplus() < 10) {
+            throw new AppException(ResponseCode.ACCOUNT_MONTH_QUOTA_10_ERROR.getCode(), ResponseCode.ACCOUNT_MONTH_QUOTA_10_ERROR.getInfo());
+        }
+
+        // 创建月账户额度；true = 存在月账户、false = 不存在月账户
+        boolean isExistAccountMonth = null != activityAccountMonthEntity;
+        if (null == activityAccountMonthEntity) {
+            activityAccountMonthEntity = new ActivityAccountMonthEntity();
+            activityAccountMonthEntity.setUserId(userId);
+            activityAccountMonthEntity.setActivityId(activityId);
+            activityAccountMonthEntity.setMonth(month);
+            activityAccountMonthEntity.setMonthCount(activityAccountEntity.getMonthCount());
+            activityAccountMonthEntity.setMonthCountSurplus(activityAccountEntity.getMonthCount());
+        }
+
+        // 查询日账户额度
+        ActivityAccountDayEntity activityAccountDayEntity = activityRepository.queryActivityAccountDayByUserId(userId, activityId, day);
+        if (null != activityAccountDayEntity && activityAccountDayEntity.getDayCountSurplus() <= 0) {
+            throw new AppException(ResponseCode.ACCOUNT_DAY_QUOTA_10_ERROR.getCode(), ResponseCode.ACCOUNT_DAY_QUOTA_10_ERROR.getInfo());
+        }
+
+        // 创建日账户额度；true = 存在日账户、false = 不存在日账户
+        boolean isExistAccountDay = null != activityAccountDayEntity;
+        if (null == activityAccountDayEntity) {
+            activityAccountDayEntity = new ActivityAccountDayEntity();
+            activityAccountDayEntity.setUserId(userId);
+            activityAccountDayEntity.setActivityId(activityId);
+            activityAccountDayEntity.setDay(day);
+            activityAccountDayEntity.setDayCount(activityAccountEntity.getDayCount());
+            activityAccountDayEntity.setDayCountSurplus(activityAccountEntity.getDayCount());
+        }
+
+        // 构建对象
+        CreatePartakeOrderAggregate createPartakeOrderAggregate = new CreatePartakeOrderAggregate();
+        createPartakeOrderAggregate.setUserId(userId);
+        createPartakeOrderAggregate.setActivityId(activityId);
+        createPartakeOrderAggregate.setActivityAccountEntity(activityAccountEntity);
+        createPartakeOrderAggregate.setExistAccountMonth(isExistAccountMonth);
+        createPartakeOrderAggregate.setActivityAccountMonthEntity(activityAccountMonthEntity);
+        createPartakeOrderAggregate.setExistAccountDay(isExistAccountDay);
+        createPartakeOrderAggregate.setActivityAccountDayEntity(activityAccountDayEntity);
+
+        return createPartakeOrderAggregate;
+    }
+
+    @Override
     protected UserRaffleOrderEntity buildUserRaffleOrder(String userId, Long activityId, Date currentDate) {
         ActivityEntity activityEntity = activityRepository.queryRaffleActivityByActivityId(activityId);
         // 构建订单
@@ -103,4 +165,27 @@ public class RaffleActivityPartakeService extends AbstractRaffleActivityPartake{
         return userRaffleOrder;
     }
 
+
+    @Override
+    protected UserTenRaffleOrderEntity buildUserTenRaffleOrders(String userId, Long activityId, Date currentDate) {
+
+        ActivityEntity activityEntity = activityRepository.queryRaffleActivityByActivityId(activityId);
+        List<String> orders = new ArrayList<>(10);
+        for (int i = 0; i < 10; i++) {
+            String curOrder = RandomStringUtils.randomNumeric(12);
+            orders.add(curOrder);
+        }
+
+        UserTenRaffleOrderEntity userTenRaffleOrderEntity = new UserTenRaffleOrderEntity();
+        userTenRaffleOrderEntity.setUserId(userId);
+        userTenRaffleOrderEntity.setActivityId(activityId);
+        userTenRaffleOrderEntity.setActivityName(activityEntity.getActivityName());
+        userTenRaffleOrderEntity.setStrategyId(activityEntity.getStrategyId());
+        userTenRaffleOrderEntity.setOrderIds(orders);
+        userTenRaffleOrderEntity.setOrderTime(currentDate);
+        userTenRaffleOrderEntity.setOrderState(UserRaffleOrderStateVO.create);
+        userTenRaffleOrderEntity.setEndDateTime(activityEntity.getEndDateTime());
+
+        return userTenRaffleOrderEntity;
+    }
 }

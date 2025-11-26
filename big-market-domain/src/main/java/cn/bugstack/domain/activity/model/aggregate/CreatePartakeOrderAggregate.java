@@ -1,9 +1,6 @@
 package cn.bugstack.domain.activity.model.aggregate;
 
-import cn.bugstack.domain.activity.model.entity.ActivityAccountDayEntity;
-import cn.bugstack.domain.activity.model.entity.ActivityAccountEntity;
-import cn.bugstack.domain.activity.model.entity.ActivityAccountMonthEntity;
-import cn.bugstack.domain.activity.model.entity.UserRaffleOrderEntity;
+import cn.bugstack.domain.activity.model.entity.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -59,5 +56,7 @@ public class CreatePartakeOrderAggregate {
      * 抽奖单实体
      */
     private UserRaffleOrderEntity userRaffleOrderEntity;
+
+    private UserTenRaffleOrderEntity userTenRaffleOrderEntity;
 
 }

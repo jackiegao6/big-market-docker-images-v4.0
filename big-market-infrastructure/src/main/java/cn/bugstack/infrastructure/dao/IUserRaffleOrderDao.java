@@ -4,6 +4,9 @@ import cn.bugstack.infrastructure.dao.po.UserRaffleOrder;
 import cn.bugstack.middleware.db.router.annotation.DBRouter;
 import cn.bugstack.middleware.db.router.annotation.DBRouterStrategy;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @author Fuzhengwei bugstack.cn @小傅哥
@@ -15,6 +18,8 @@ import org.apache.ibatis.annotations.Mapper;
 public interface IUserRaffleOrderDao {
 
     void insert(UserRaffleOrder userRaffleOrder);
+
+    void insertTen(@Param("user") UserRaffleOrder userRaffleOrder,@Param("orderIds") List<String> orderIds);
 
     @DBRouter
     UserRaffleOrder queryNoUsedRaffleOrder(UserRaffleOrder userRaffleOrderReq);

@@ -4,6 +4,7 @@ import cn.bugstack.domain.activity.model.aggregate.CreatePartakeOrderAggregate;
 import cn.bugstack.domain.activity.model.entity.ActivityEntity;
 import cn.bugstack.domain.activity.model.entity.PartakeRaffleActivityEntity;
 import cn.bugstack.domain.activity.model.entity.UserRaffleOrderEntity;
+import cn.bugstack.domain.activity.model.entity.UserTenRaffleOrderEntity;
 import cn.bugstack.domain.activity.model.valobj.ActivityStateVO;
 import cn.bugstack.domain.activity.repository.IActivityRepository;
 import cn.bugstack.domain.activity.service.IRaffleActivityPartakeService;
@@ -80,8 +81,56 @@ public abstract class AbstractRaffleActivityPartake implements IRaffleActivityPa
         return userRaffleOrder;
     }
 
+    @Override
+    public UserTenRaffleOrderEntity createTenOrders(String userId, Long activityId) {
+        return createTenOrders(PartakeRaffleActivityEntity.builder()
+                .userId(userId)
+                .activityId(activityId)
+                .build());
+    }
+
+    private UserTenRaffleOrderEntity createTenOrders(PartakeRaffleActivityEntity partakeRaffleActivityEntity) {
+        // 0. 基础信息
+        String userId = partakeRaffleActivityEntity.getUserId();
+        Long activityId = partakeRaffleActivityEntity.getActivityId();
+        Date currentDate = new Date();
+        log.info("创建活动抽奖单开始 userId:{} activityId:{}", userId, activityId);
+        // 1. 活动查询
+        ActivityEntity activityEntity = activityRepository.queryRaffleActivityByActivityId(activityId);
+
+        // 校验；活动状态
+        if (!ActivityStateVO.open.equals(activityEntity.getState())) {
+            log.error("创建活动抽奖单失败，活动状态未开启 activityId:{} state:{}", activityId, activityEntity.getState());
+            throw new AppException(ResponseCode.ACTIVITY_STATE_ERROR.getCode(), ResponseCode.ACTIVITY_STATE_ERROR.getInfo());
+        }
+        // 校验；活动日期「开始时间 <- 当前时间 -> 结束时间」
+        if (activityEntity.getBeginDateTime().after(currentDate) || activityEntity.getEndDateTime().before(currentDate)) {
+            log.error("创建活动抽奖单失败，活动时间未开始 activityId:{} state:{}", activityId, activityEntity.getState());
+            throw new AppException(ResponseCode.ACTIVITY_DATE_ERROR.getCode(), ResponseCode.ACTIVITY_DATE_ERROR.getInfo());
+        }
+
+        // 3. 额度账户过滤&返回账户构建聚合对象
+        CreatePartakeOrderAggregate createPartakeOrderAggregate = this.doFilterAccountTen(userId, activityId, currentDate);
+
+        // 4. 构建订单
+        UserTenRaffleOrderEntity userTenRaffleOrderEntity = this.buildUserTenRaffleOrders(userId, activityId, currentDate);
+
+        // 5. 填充抽奖单实体对象
+        createPartakeOrderAggregate.setUserTenRaffleOrderEntity(userTenRaffleOrderEntity);
+
+        // 6. 保存聚合对象 - 一个领域内的一个聚合是一个事务操作
+        activityRepository.saveCreatePartakeOrderAggregateTen(createPartakeOrderAggregate);
+        log.info("创建十次活动抽奖单完成 userId:{} activityId:{} orderId:{}", userId, activityId, userTenRaffleOrderEntity.getOrderIds());
+        // 7. 返回订单信息
+        return userTenRaffleOrderEntity;
+    }
+
     protected abstract CreatePartakeOrderAggregate doFilterAccount(String userId, Long activityId, Date currentDate);
 
+    protected abstract CreatePartakeOrderAggregate doFilterAccountTen(String userId, Long activityId, Date currentDate);
+
     protected abstract UserRaffleOrderEntity buildUserRaffleOrder(String userId, Long activityId, Date currentDate);
+
+    protected abstract UserTenRaffleOrderEntity buildUserTenRaffleOrders(String userId, Long activityId, Date currentDate);
 
 }
