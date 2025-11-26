@@ -691,16 +691,19 @@ public class ActivityRepository implements IActivityRepository {
                 .userId(userId)
                 .build());
 
+        /**
+         * 新用户 默认就是 总抽10000次 每月最多抽10000次 每天最多抽10000次 每天一上来就可以抽50次
+         */
         if (null == raffleActivityAccount) {
             return ActivityAccountEntity.builder()
                     .activityId(activityId)
                     .userId(userId)
-                    .totalCount(0)
-                    .totalCountSurplus(0)
-                    .monthCount(0)
-                    .monthCountSurplus(0)
-                    .dayCount(0)
-                    .dayCountSurplus(0)
+                    .totalCount(10000)
+                    .totalCountSurplus(10000)
+                    .monthCount(10000)
+                    .monthCountSurplus(10000)
+                    .dayCount(10000)
+                    .dayCountSurplus(50)
                     .build();
         }
 

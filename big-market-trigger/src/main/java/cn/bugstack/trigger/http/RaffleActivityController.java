@@ -24,12 +24,11 @@ import cn.bugstack.domain.strategy.service.IRaffleStrategy;
 import cn.bugstack.domain.strategy.service.armory.IStrategyArmory;
 import cn.bugstack.trigger.api.IRaffleActivityService;
 import cn.bugstack.trigger.api.dto.*;
+import cn.bugstack.trigger.api.response.Response;
 import cn.bugstack.types.annotations.DCCValue;
 import cn.bugstack.types.annotations.RateLimiterAccessInterceptor;
 import cn.bugstack.types.enums.ResponseCode;
 import cn.bugstack.types.exception.AppException;
-import cn.bugstack.trigger.api.response.Response;
-import com.alibaba.fastjson.JSON;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import lombok.extern.slf4j.Slf4j;
@@ -220,11 +219,6 @@ public class RaffleActivityController implements IRaffleActivityService {
         }
     }
 
-    @RateLimiterAccessInterceptor(key = "userId", fallbackMethod = "drawRateLimiterError", permitsPerSecond = 1.0d, blacklistCount = 1)
-    @HystrixCommand(commandProperties = {
-            @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "150")
-    }, fallbackMethod = "drawHystrixError"
-    )
     @RequestMapping(value = "drawTen", method = RequestMethod.POST)
     @Override
     public Response<List<ActivityDrawResponseDTO>> drawTen(@RequestBody ActivityDrawRequestDTO request) {
@@ -416,19 +410,20 @@ public class RaffleActivityController implements IRaffleActivityService {
             if (StringUtils.isBlank(request.getUserId()) || null == request.getActivityId()) {
                 throw new AppException(ResponseCode.ILLEGAL_PARAMETER.getCode(), ResponseCode.ILLEGAL_PARAMETER.getInfo());
             }
+
             ActivityAccountEntity activityAccountEntity = raffleActivityAccountQuotaService.queryActivityAccountEntity(request.getActivityId(), request.getUserId());
-            UserActivityAccountResponseDTO userActivityAccountResponseDTO = UserActivityAccountResponseDTO.builder()
-                    .totalCount(activityAccountEntity.getTotalCount())
-                    .totalCountSurplus(activityAccountEntity.getTotalCountSurplus())
-                    .dayCount(activityAccountEntity.getDayCount())
-                    .dayCountSurplus(activityAccountEntity.getDayCountSurplus())
-                    .monthCount(activityAccountEntity.getMonthCount())
-                    .monthCountSurplus(activityAccountEntity.getMonthCountSurplus())
-                    .build();
+
             return Response.<UserActivityAccountResponseDTO>builder()
                     .code(ResponseCode.SUCCESS.getCode())
                     .info(ResponseCode.SUCCESS.getInfo())
-                    .data(userActivityAccountResponseDTO)
+                    .data(UserActivityAccountResponseDTO.builder()
+                            .totalCount(activityAccountEntity.getTotalCount())
+                            .totalCountSurplus(activityAccountEntity.getTotalCountSurplus())
+                            .dayCount(activityAccountEntity.getDayCount())
+                            .dayCountSurplus(activityAccountEntity.getDayCountSurplus())
+                            .monthCount(activityAccountEntity.getMonthCount())
+                            .monthCountSurplus(activityAccountEntity.getMonthCountSurplus())
+                            .build())
                     .build();
         } catch (Exception e) {
             log.error("查询用户活动账户失败 userId:{} activityId:{}", request.getUserId(), request.getActivityId(), e);
@@ -553,7 +548,7 @@ public class RaffleActivityController implements IRaffleActivityService {
 
     @Override
     @RequestMapping(value = "queryRecentRaffleUsers", method = RequestMethod.GET)
-    public Response<List<OneHourRaffleUserListResponseDTO>> query1HRaffleUser(Long activityId) {
+    public Response<List<OneHourRaffleUserListResponseDTO>> queryRecentRaffleUsers(Long activityId) {
         try{
             // 1. 参数校验
             if (null == activityId) {

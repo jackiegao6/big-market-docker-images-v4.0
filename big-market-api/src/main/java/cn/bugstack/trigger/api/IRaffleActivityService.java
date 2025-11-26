@@ -85,6 +85,11 @@ public interface IRaffleActivityService {
     Response<Boolean> creditPayExchangeSku(SkuProductShopCartRequestDTO request);
 
 
-    Response<List<OneHourRaffleUserListResponseDTO>> query1HRaffleUser(Long activityId);
+    /**
+     * 查询最近中奖的用户列表
+     * @param activityId
+     * @return
+     */
+    Response<List<OneHourRaffleUserListResponseDTO>> queryRecentRaffleUsers(Long activityId);
 
 }
