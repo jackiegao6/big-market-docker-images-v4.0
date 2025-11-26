@@ -39,7 +39,6 @@ public class DCCController implements IDCCService {
     @Override
     public Response<Boolean> updateConfig(@RequestParam String key, @RequestParam String value) {
         try {
-            log.info("DCC 动态配置值变更开始 key:{} value:{}", key, value);
             if (null == client){
                 log.warn("DCC 动态配置值变更拒绝，CuratorFramework 未初始化启动「配置未开启」 key:{} value:{}", key, value);
                 return Response.<Boolean>builder()

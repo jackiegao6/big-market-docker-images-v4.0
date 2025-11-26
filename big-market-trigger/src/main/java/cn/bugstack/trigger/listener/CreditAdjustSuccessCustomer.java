@@ -34,7 +34,6 @@ public class CreditAdjustSuccessCustomer {
     @RabbitListener(queuesToDeclare = @Queue(value = "${spring.rabbitmq.topic.credit_adjust_success}"))
     public void listener(String message) {
         try {
-            log.info("监听积分账户调整成功消息，进行交易商品发货 topic: {} message: {}", topic, message);
             BaseEvent.EventMessage<CreditAdjustSuccessMessageEvent.CreditAdjustSuccessMessage> eventMessage = JSON.parseObject(message, new TypeReference<BaseEvent.EventMessage<CreditAdjustSuccessMessageEvent.CreditAdjustSuccessMessage>>() {
             }.getType());
             CreditAdjustSuccessMessageEvent.CreditAdjustSuccessMessage creditAdjustSuccessMessage = eventMessage.getData();

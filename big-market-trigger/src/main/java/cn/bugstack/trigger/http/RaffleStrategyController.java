@@ -89,7 +89,6 @@ public class RaffleStrategyController implements IRaffleStrategyService {
     @Override
     public Response<List<RaffleAwardListResponseDTO>> queryRaffleAwardList(@RequestBody RaffleAwardListRequestDTO request) {
         try {
-            log.info("查询抽奖奖品列表配开始 userId:{} activityId：{}", request.getUserId(), request.getActivityId());
             // 1. 参数校验
             if (StringUtils.isBlank(request.getUserId()) || null == request.getActivityId()) {
                 throw new AppException(ResponseCode.ILLEGAL_PARAMETER.getCode(), ResponseCode.ILLEGAL_PARAMETER.getInfo());
@@ -124,7 +123,6 @@ public class RaffleStrategyController implements IRaffleStrategyService {
                     .info(ResponseCode.SUCCESS.getInfo())
                     .data(raffleAwardListResponseDTOS)
                     .build();
-            log.info("查询抽奖奖品列表配置完成 userId:{} activityId：{} response: {}", request.getUserId(), request.getActivityId(), JSON.toJSONString(response));
             // 返回结果
             return response;
         } catch (Exception e) {
@@ -151,7 +149,6 @@ public class RaffleStrategyController implements IRaffleStrategyService {
     @Override
     public Response<List<RaffleStrategyRuleWeightResponseDTO>> queryRaffleStrategyRuleWeight(@RequestBody RaffleStrategyRuleWeightRequestDTO request) {
         try {
-            log.info("查询抽奖策略权重规则配置开始 userId:{} activityId：{}", request.getUserId(), request.getActivityId());
             // 1. 参数校验
             if (StringUtils.isBlank(request.getUserId()) || null == request.getActivityId()) {
                 throw new AppException(ResponseCode.ILLEGAL_PARAMETER.getCode(), ResponseCode.ILLEGAL_PARAMETER.getInfo());
@@ -185,7 +182,6 @@ public class RaffleStrategyController implements IRaffleStrategyService {
                     .info(ResponseCode.SUCCESS.getInfo())
                     .data(raffleStrategyRuleWeightList)
                     .build();
-            log.info("查询抽奖策略权重规则配置完成 userId:{} activityId：{} response: {}", request.getUserId(), request.getActivityId(), JSON.toJSONString(response));
             return response;
         } catch (Exception e) {
             log.error("查询抽奖策略权重规则配置失败 userId:{} activityId：{}", request.getUserId(), request.getActivityId(), e);
@@ -207,7 +203,6 @@ public class RaffleStrategyController implements IRaffleStrategyService {
     @Override
     public Response<RaffleStrategyResponseDTO> randomRaffle(@RequestBody RaffleStrategyRequestDTO requestDTO) {
         try {
-            log.info("随机抽奖开始 strategyId: {}", requestDTO.getStrategyId());
             // 调用抽奖接口
             RaffleAwardEntity raffleAwardEntity = raffleStrategy.performRaffle(RaffleFactorEntity.builder()
                     .userId("system")
@@ -222,7 +217,6 @@ public class RaffleStrategyController implements IRaffleStrategyService {
                             .awardIndex(raffleAwardEntity.getSort())
                             .build())
                     .build();
-            log.info("随机抽奖完成 strategyId: {} response: {}", requestDTO.getStrategyId(), JSON.toJSONString(response));
             return response;
         } catch (AppException e) {
             log.error("随机抽奖失败 strategyId：{} {}", requestDTO.getStrategyId(), e.getInfo());
