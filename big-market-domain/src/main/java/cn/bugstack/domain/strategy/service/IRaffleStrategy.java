@@ -1,5 +1,6 @@
 package cn.bugstack.domain.strategy.service;
 
+import cn.bugstack.domain.activity.model.entity.UserTenRaffleOrderEntity;
 import cn.bugstack.domain.strategy.model.entity.RaffleAwardEntity;
 import cn.bugstack.domain.strategy.model.entity.RaffleFactorEntity;
 
@@ -19,5 +20,7 @@ public interface IRaffleStrategy {
      * @return 抽奖的奖品
      */
     RaffleAwardEntity performRaffle(RaffleFactorEntity raffleFactorEntity);
+
+    List<RaffleAwardEntity> performRaffleTen(UserTenRaffleOrderEntity tenRaffleOrderEntity);
 
 }

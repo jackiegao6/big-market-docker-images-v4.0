@@ -13,9 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @author Fuzhengwei bugstack.cn @小傅哥
@@ -29,6 +30,9 @@ public class AwardService implements IAwardService {
     private final IAwardRepository awardRepository;
     private final SendAwardMessageEvent sendAwardMessageEvent;
     private final Map<String, IDistributeAward> distributeAwardMap;
+
+    @Resource
+    private ThreadPoolExecutor threadPoolExecutor;
 
     public AwardService(IAwardRepository awardRepository, SendAwardMessageEvent sendAwardMessageEvent, Map<String, IDistributeAward> distributeAwardMap) {
         this.awardRepository = awardRepository;
@@ -66,6 +70,21 @@ public class AwardService implements IAwardService {
         awardRepository.saveUserAwardRecord(userAwardRecordAggregate);
 
         log.info("中奖记录保存完成 userId:{} orderId:{}", userAwardRecordEntity.getUserId(), userAwardRecordEntity.getOrderId());
+    }
+
+    @Override
+    public void saveUserAwardRecordsTen(List<UserAwardRecordEntity> userAwardRecordEntityList) {
+
+        for (UserAwardRecordEntity entity : userAwardRecordEntityList) {
+            CompletableFuture.runAsync( () -> {
+               saveUserAwardRecord(entity);
+            }, threadPoolExecutor).exceptionally( exception -> {
+                log.error("异步保存中奖记录失败 userId:{} orderId:{}", entity.getUserId(), entity.getOrderId(), exception);
+                return null;
+            });
+        }
+
+        log.info("已将 {} 个任务提交至线程池", userAwardRecordEntityList.size());
     }
 
     @Override

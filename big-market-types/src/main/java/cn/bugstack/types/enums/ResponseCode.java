@@ -30,6 +30,7 @@ public enum ResponseCode {
     ACTIVITY_ORDER_ERROR("ERR_BIZ_009", "用户抽奖单已使用过，不可重复抽奖"),
     AWARD_CONFIG_ERROR("ERR_CONFIG_001", "award_config 配置不是一个范围值，如 1,100"),
     USER_CREDIT_ACCOUNT_NO_AVAILABLE_AMOUNT("ERR_CREDIT_001", "用户积分账户额度不足"),
+    TEN_DRAW_FAILED("ERR_CREDIT_100", "十连抽失败"),
     ;
 
     private String code;

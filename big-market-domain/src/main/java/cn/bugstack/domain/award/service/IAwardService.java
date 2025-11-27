@@ -13,6 +13,8 @@ public interface IAwardService {
 
     void saveUserAwardRecord(UserAwardRecordEntity userAwardRecordEntity);
 
+    void saveUserAwardRecordsTen(List<UserAwardRecordEntity> userAwardRecordEntityList);
+
     /**
      * 配送发货奖品
      */

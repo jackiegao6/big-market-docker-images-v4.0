@@ -43,8 +43,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @author gzc
@@ -77,8 +75,6 @@ public class RaffleActivityController implements IRaffleActivityService {
     private IBehaviorRebateService behaviorRebateService;
     @Resource
     private ICreditAdjustService creditAdjustService;
-    @Resource
-    private ThreadPoolExecutor executor;
 
     // dcc 统一配置中心动态配置降级开关
     @DCCValue("degradeSwitch:close")
@@ -237,40 +233,33 @@ public class RaffleActivityController implements IRaffleActivityService {
             }
 
             // 3. 参与活动 - 创建参与记录订单
-            UserTenRaffleOrderEntity tenOrders = raffleActivityPartakeService.createTenOrders(request.getUserId(), request.getActivityId());
-            // 3. 参与活动 - 创建参与记录订单
             UserTenRaffleOrderEntity tenRaffleOrderEntity = raffleActivityPartakeService.createTenOrders(request.getUserId(), request.getActivityId());
 
-            // 3. 抽奖策略 - 执行抽奖
-            List<RaffleAwardEntity> raffleAwardEntities = new ArrayList<>();
-            List<Callable<RaffleAwardEntity>> tasks = new ArrayList<>(); // 任务列表
-            for (int i = 0; i < 10; i++) {
-                final int index = i;
-                tasks.add(() -> {
-                    RaffleAwardEntity raffleAwardEntity = raffleStrategy.performRaffle(RaffleFactorEntity.builder()
-                            .userId(tenRaffleOrderEntity.getUserId())
-                            .strategyId(tenRaffleOrderEntity.getStrategyId())
-                            .endDateTime(tenRaffleOrderEntity.getEndDateTime())
-                            .build());
-                    raffleAwardEntities.add(raffleAwardEntity);
-                    // 4. 存放结果 - 写入中奖记录
-                    UserAwardRecordEntity userAwardRecord = UserAwardRecordEntity.builder()
-                            .userId(tenRaffleOrderEntity.getUserId())
-                            .activityId(tenRaffleOrderEntity.getActivityId())
-                            .strategyId(tenRaffleOrderEntity.getStrategyId())
-                            .orderId(tenRaffleOrderEntity.getOrderIds().get(index))
-                            .awardId(raffleAwardEntity.getAwardId())
-                            .awardTitle(raffleAwardEntity.getAwardTitle())
-                            .awardTime(new Date())
-                            .awardState(AwardStateVO.create)
-                            .awardConfig(raffleAwardEntity.getAwardConfig())
-                            .build();
-                    awardService.saveUserAwardRecord(userAwardRecord);
-                    return null; // 返回结果
-                });
-            }
-            executor.invokeAll(tasks);
+            // 4. 抽奖策略 - 并发执行抽奖
+            List<RaffleAwardEntity> raffleAwardEntities = raffleStrategy.performRaffleTen(tenRaffleOrderEntity);
 
+            // 5. 异步保存中奖订单
+            List<UserAwardRecordEntity> userAwardRecordEntityList = new ArrayList<>(10);
+            for (int index = 0; index < 10; index++) {
+                RaffleAwardEntity raffleAwardEntity = raffleAwardEntities.get(index);
+
+                UserAwardRecordEntity userAwardRecord = UserAwardRecordEntity.builder()
+                        .userId(tenRaffleOrderEntity.getUserId())
+                        .activityId(tenRaffleOrderEntity.getActivityId())
+                        .strategyId(tenRaffleOrderEntity.getStrategyId())
+                        .orderId(tenRaffleOrderEntity.getOrderIds().get(index))
+                        .awardId(raffleAwardEntity.getAwardId())
+                        .awardTitle(raffleAwardEntity.getAwardTitle())
+                        .awardTime(new Date())
+                        .awardState(AwardStateVO.create)
+                        .awardConfig(raffleAwardEntity.getAwardConfig())
+                        .build();
+                index++;
+                userAwardRecordEntityList.add(userAwardRecord);
+            }
+            awardService.saveUserAwardRecordsTen(userAwardRecordEntityList);
+
+            // 组装结果
             List<ActivityDrawResponseDTO> res = new ArrayList<>();
             for (RaffleAwardEntity raffleAwardEntity : raffleAwardEntities) {
                 ActivityDrawResponseDTO ele = ActivityDrawResponseDTO.builder()
@@ -280,8 +269,6 @@ public class RaffleActivityController implements IRaffleActivityService {
                         .build();
                 res.add(ele);
             }
-
-            // 6. 返回结果
             return Response.<List<ActivityDrawResponseDTO>>builder()
                     .code(ResponseCode.SUCCESS.getCode())
                     .info(ResponseCode.SUCCESS.getInfo())

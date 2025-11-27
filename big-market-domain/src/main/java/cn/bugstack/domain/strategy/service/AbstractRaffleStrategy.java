@@ -1,7 +1,6 @@
 package cn.bugstack.domain.strategy.service;
 
-import cn.bugstack.domain.award.model.entity.UserAwardRecordEntity;
-import cn.bugstack.domain.award.model.valobj.AwardStateVO;
+import cn.bugstack.domain.activity.model.entity.UserTenRaffleOrderEntity;
 import cn.bugstack.domain.strategy.model.entity.RaffleAwardEntity;
 import cn.bugstack.domain.strategy.model.entity.RaffleFactorEntity;
 import cn.bugstack.domain.strategy.model.entity.StrategyAwardEntity;
@@ -14,16 +13,17 @@ import cn.bugstack.types.exception.AppException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 /**
- * @author Fuzhengwei bugstack.cn @小傅哥
+ * @author gzc
  * @description 抽奖策略抽象类，定义抽奖的标准流程
- * @create 2024-01-06 09:26
  */
 @Slf4j
 public abstract class AbstractRaffleStrategy implements IRaffleStrategy {
@@ -36,6 +36,9 @@ public abstract class AbstractRaffleStrategy implements IRaffleStrategy {
     protected final DefaultChainFactory defaultChainFactory;
     // 抽奖的决策树 -> 负责抽奖中到抽奖后的规则过滤，如抽奖到A奖品ID，之后要做次数的判断和库存的扣减等。
     protected final DefaultTreeFactory defaultTreeFactory;
+
+    @Resource
+    private ThreadPoolExecutor threadPoolExecutor;
 
     // 为什么 Spring 推荐使用构造注入；https://docs.spring.io/spring-framework/reference/core/beans/dependencies/factory-collaborators.html
     public AbstractRaffleStrategy(IStrategyRepository repository, IStrategyDispatch strategyDispatch, DefaultChainFactory defaultChainFactory, DefaultTreeFactory defaultTreeFactory) {
@@ -53,18 +56,15 @@ public abstract class AbstractRaffleStrategy implements IRaffleStrategy {
         if (null == strategyId || StringUtils.isBlank(userId)) {
             throw new AppException(ResponseCode.ILLEGAL_PARAMETER.getCode(), ResponseCode.ILLEGAL_PARAMETER.getInfo());
         }
-        log.info("抽奖策略计算 userId:{} strategyId:{}", userId, strategyId);
 
         // 2. 责任链抽奖计算【这步拿到的是初步的抽奖ID，之后需要根据ID处理抽奖】注意；黑名单、权重等非默认抽奖的直接返回抽奖结果
         DefaultChainFactory.StrategyAwardVO chainStrategyAwardVO = raffleLogicChain(userId, strategyId);
-        log.info("抽奖策略计算-责任链 {} {} {} {}", userId, strategyId, chainStrategyAwardVO.getAwardId(), chainStrategyAwardVO.getLogicModel());
         if (!DefaultChainFactory.LogicModel.RULE_DEFAULT.getCode().equals(chainStrategyAwardVO.getLogicModel())) {
             return buildRaffleAwardEntity(strategyId, chainStrategyAwardVO.getAwardId(), chainStrategyAwardVO.getAwardRuleValue());
         }
 
         // 3. 规则树抽奖过滤【奖品ID，会根据抽奖次数判断、库存判断、兜底兜里返回最终的可获得奖品信息】
         DefaultTreeFactory.StrategyAwardVO treeStrategyAwardVO = raffleLogicTree(userId, strategyId, chainStrategyAwardVO.getAwardId(), raffleFactorEntity.getEndDateTime());
-        log.info("抽奖策略计算-规则树 {} {} {} {}", userId, strategyId, treeStrategyAwardVO.getAwardId(), treeStrategyAwardVO.getAwardRuleValue());
 
         // 4. 返回抽奖结果
         return buildRaffleAwardEntity(strategyId, treeStrategyAwardVO.getAwardId(), treeStrategyAwardVO.getAwardRuleValue());
@@ -78,6 +78,44 @@ public abstract class AbstractRaffleStrategy implements IRaffleStrategy {
                 .awardConfig(awardConfig)
                 .sort(strategyAward.getSort())
                 .build();
+    }
+
+    @Override
+    public List<RaffleAwardEntity> performRaffleTen(UserTenRaffleOrderEntity tenRaffleOrderEntity) {
+
+        List<CompletableFuture<RaffleAwardEntity>> resList = new ArrayList<>(10);
+        for (int i = 0; i < 10; i++) {
+            RaffleFactorEntity raffleFactorEntity = RaffleFactorEntity.builder()
+                        .userId(tenRaffleOrderEntity.getUserId())
+                        .strategyId(tenRaffleOrderEntity.getStrategyId())
+                        .endDateTime(tenRaffleOrderEntity.getEndDateTime())
+                        .build();
+
+            // supplyAsync 有返回值的异步调用
+            CompletableFuture<RaffleAwardEntity> res = CompletableFuture.supplyAsync( () -> {
+                try {
+                    // 执行单次抽奖
+                    return performRaffle(raffleFactorEntity);
+                } catch (Exception e) {
+                    log.error("单次抽奖异常 userId:{}", tenRaffleOrderEntity.getUserId(), e);
+                    throw e;
+                }
+            }, threadPoolExecutor);
+
+            resList.add(res);
+        }
+
+        // finishFuture 只负责监控 不负责收集结果
+        CompletableFuture<Void> finishFuture = CompletableFuture.allOf(resList.toArray(new CompletableFuture[0]));
+        try {
+            finishFuture.join();
+        }catch (Exception e){
+            log.error("十连抽过程中发生异常", e);
+            // 根据业务决定是返回部分成功，还是直接抛异常回滚
+            throw new AppException(ResponseCode.TEN_DRAW_FAILED.getCode(), ResponseCode.TEN_DRAW_FAILED.getInfo());
+        }
+
+        return resList.stream().map(CompletableFuture::join).collect(Collectors.toList());
     }
 
     /**
