@@ -55,6 +55,7 @@ import java.util.List;
 @DubboService(version = "1.0")
 public class RaffleActivityController implements IRaffleActivityService {
 
+    // todo 会不会有并发问题
     private final SimpleDateFormat dateFormatDay = new SimpleDateFormat("yyyyMMdd");
 
     @Resource
@@ -254,7 +255,7 @@ public class RaffleActivityController implements IRaffleActivityService {
                         .awardState(AwardStateVO.create)
                         .awardConfig(raffleAwardEntity.getAwardConfig())
                         .build();
-                index++;
+
                 userAwardRecordEntityList.add(userAwardRecord);
             }
             awardService.saveUserAwardRecordsTen(userAwardRecordEntityList);
