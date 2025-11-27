@@ -15,11 +15,11 @@ public interface IAwardService {
 
     void saveUserAwardRecordsTen(List<UserAwardRecordEntity> userAwardRecordEntityList);
 
+    List<UserAwardRecordEntity> queryRecentRaffleUsers(Long activityId);
+
     /**
      * 配送发货奖品
      */
     void distributeAward(DistributeAwardEntity distributeAwardEntity);
-
-    List<UserAwardRecordEntity> queryRecentRaffleUsers(Long activityId);
 
 }

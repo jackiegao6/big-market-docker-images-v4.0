@@ -8,13 +8,12 @@ import cn.bugstack.domain.award.model.entity.UserCreditAwardEntity;
 import cn.bugstack.domain.award.model.valobj.AccountStatusVO;
 import cn.bugstack.domain.award.repository.IAwardRepository;
 import cn.bugstack.infrastructure.dao.*;
-import cn.bugstack.infrastructure.elasticsearch.IElasticSearchUserAwardRecordDao;
-import cn.bugstack.infrastructure.elasticsearch.IElasticSearchUserRaffleOrderDao;
-import cn.bugstack.infrastructure.event.EventPublisher;
 import cn.bugstack.infrastructure.dao.po.Task;
 import cn.bugstack.infrastructure.dao.po.UserAwardRecord;
 import cn.bugstack.infrastructure.dao.po.UserCreditAccount;
 import cn.bugstack.infrastructure.dao.po.UserRaffleOrder;
+import cn.bugstack.infrastructure.elasticsearch.IElasticSearchUserAwardRecordDao;
+import cn.bugstack.infrastructure.event.EventPublisher;
 import cn.bugstack.infrastructure.redis.IRedisService;
 import cn.bugstack.middleware.db.router.strategy.IDBRouterStrategy;
 import cn.bugstack.types.common.Constants;
@@ -101,15 +100,16 @@ public class AwardRepository implements IAwardRepository {
                     taskDao.insert(task);
                     // 更新抽奖单
                     int count = userRaffleOrderDao.updateUserRaffleOrderStateUsed(userRaffleOrderReq);
+                    log.info("更新 user_raffle_order state: used userId:{} activityId:{} orderId:{}", userId, activityId, userRaffleOrderReq.getOrderId());
                     if (1 != count) {
                         status.setRollbackOnly();
-                        log.error("写入中奖记录，用户抽奖单已使用过，不可重复抽奖 userId: {} activityId: {} awardId: {}", userId, activityId, awardId);
+                        log.error("写入发奖记录，用户抽奖单已使用过，不可重复抽奖 userId: {} activityId: {} awardId: {}", userId, activityId, awardId);
                         throw new AppException(ResponseCode.ACTIVITY_ORDER_ERROR.getCode(), ResponseCode.ACTIVITY_ORDER_ERROR.getInfo());
                     }
                     return 1;
                 } catch (DuplicateKeyException e) {
                     status.setRollbackOnly();
-                    log.error("写入中奖记录，唯一索引冲突 userId: {} activityId: {} awardId: {}", userId, activityId, awardId, e);
+                    log.error("写入发奖记录，唯一索引冲突 userId: {} activityId: {} awardId: {}", userId, activityId, awardId, e);
                     throw new AppException(ResponseCode.INDEX_DUP.getCode(), e);
                 }
             });
@@ -122,12 +122,11 @@ public class AwardRepository implements IAwardRepository {
             eventPublisher.publish(task.getTopic(), task.getMessage());
             // 更新数据库记录，task 任务表
             taskDao.updateTaskSendMessageCompleted(task);
-            log.info("写入中奖记录，发送MQ消息完成 userId: {} orderId:{} topic: {}", userId, userAwardRecordEntity.getOrderId(), task.getTopic());
+            log.info("写入发奖记录，发送MQ消息完成 userId: {} orderId:{} topic: {}", userId, userAwardRecordEntity.getOrderId(), task.getTopic());
         } catch (Exception e) {
-            log.error("写入中奖记录，发送MQ消息失败 userId: {} topic: {}", userId, task.getTopic());
+            log.error("写入发奖记录，发送MQ消息失败 userId: {} topic: {}", userId, task.getTopic());
             taskDao.updateTaskSendMessageFail(task);
         }
-
     }
 
     @Override
