@@ -81,30 +81,6 @@
         where user_id = #{userId} and activity_id = #{activityId} and day_count_surplus > 0
     </update>
 
-    <update id="updateActivityAccountMonthSurplusImageQuota" parameterType="cn.bugstack.infrastructure.dao.po.RaffleActivityAccount">
-        update raffle_activity_account
-        set month_count_surplus = #{monthCountSurplus} - 1, update_time = now()
-        where user_id = #{userId} and activity_id = #{activityId}
-    </update>
-
-    <update id="updateActivityAccountMonthSurplusImageQuotaTen" parameterType="cn.bugstack.infrastructure.dao.po.RaffleActivityAccount">
-        update raffle_activity_account
-        set month_count_surplus = #{monthCountSurplus} - 10, update_time = now()
-        where user_id = #{userId} and activity_id = #{activityId}
-    </update>
-
-    <update id="updateActivityAccountDaySurplusImageQuota" parameterType="cn.bugstack.infrastructure.dao.po.RaffleActivityAccountDay">
-        update raffle_activity_account
-        set day_count_surplus = #{dayCountSurplus} - 1, update_time = now()
-        where user_id = #{userId} and activity_id = #{activityId}
-    </update>
-
-    <update id="updateActivityAccountDaySurplusImageQuotaTen" parameterType="cn.bugstack.infrastructure.dao.po.RaffleActivityAccountDay">
-        update raffle_activity_account
-        set day_count_surplus = #{dayCountSurplus} - 10, update_time = now()
-        where user_id = #{userId} and activity_id = #{activityId}
-    </update>
-
     <select id="queryAccountByUserId" parameterType="cn.bugstack.infrastructure.dao.po.RaffleActivityAccount" resultMap="dataMap">
         select  user_id, activity_id, total_count, total_count_surplus, day_count,
         day_count_surplus, month_count, month_count_surplus

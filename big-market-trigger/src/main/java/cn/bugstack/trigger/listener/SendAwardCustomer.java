@@ -50,9 +50,7 @@ public class SendAwardCustomer {
                 distributeAwardEntity.setAwardConfig(sendAwardMessage.getAwardConfig());
                 awardService.distributeAward(distributeAwardEntity);
 
-                log.info("监听用户奖品发送消息，发奖完成 topic: {} message: {}", topic, message);
-            }else {
-                log.info("暂未配置发奖服务 topic: {} message: {}", topic, message);
+                log.info("监听用户奖品发送消息，随机积分发奖完成 topic: {} message: {}", topic, message);
             }
             // 更新数据库记录，task 任务表
             taskService.updateTaskSendMessageCompleted(userId, messageId);

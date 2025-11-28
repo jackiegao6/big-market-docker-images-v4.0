@@ -473,10 +473,9 @@ public class ActivityRepository implements IActivityRepository {
                                 .monthCountSurplus(activityAccountMonthEntity.getMonthCountSurplus() - 1)
                                 .build());
                         // 新创建月账户，则更新总账表中月镜像额度
-                        raffleActivityAccountDao.updateActivityAccountMonthSurplusImageQuota(RaffleActivityAccount.builder()
+                        raffleActivityAccountDao.updateActivityAccountMonthSubtractionQuota(RaffleActivityAccount.builder()
                                 .userId(userId)
                                 .activityId(activityId)
-                                .monthCountSurplus(activityAccountEntity.getMonthCountSurplus())
                                 .build());
                     }
 
@@ -508,10 +507,9 @@ public class ActivityRepository implements IActivityRepository {
                                 .dayCountSurplus(activityAccountDayEntity.getDayCountSurplus() - 1)
                                 .build());
                         // 新创建日账户，则更新总账表中日镜像额度
-                        raffleActivityAccountDao.updateActivityAccountDaySurplusImageQuota(RaffleActivityAccount.builder()
+                        raffleActivityAccountDao.updateActivityAccountDaySubtractionQuota(RaffleActivityAccount.builder()
                                 .userId(userId)
                                 .activityId(activityId)
-                                .dayCountSurplus(activityAccountEntity.getDayCountSurplus())
                                 .build());
                     }
 
@@ -593,22 +591,21 @@ public class ActivityRepository implements IActivityRepository {
                                 .monthCountSurplus(activityAccountMonthEntity.getMonthCountSurplus() - 10)
                                 .build());
                         // 新创建月账户，则更新总账表中月镜像额度
-                        raffleActivityAccountDao.updateActivityAccountMonthSurplusImageQuotaTen(RaffleActivityAccount.builder()
+                        raffleActivityAccountDao.updateActivityAccountMonthSubtractionQuotaTen(RaffleActivityAccount.builder()
                                 .userId(userId)
                                 .activityId(activityId)
-                                .monthCountSurplus(activityAccountEntity.getMonthCountSurplus())
                                 .build());
                     }
 
+
                     // 3. 创建或更新日账户，true - 存在则更新，false - 不存在则插入
                     if (createPartakeOrderAggregate.isExistAccountDay()) {
-                        int updateDayCount = raffleActivityAccountDayDao.updateActivityAccountDaySubtractionQuota(RaffleActivityAccountDay.builder()
+                        int updateDayCount = raffleActivityAccountDayDao.updateActivityAccountDaySubtractionQuotaTen(RaffleActivityAccountDay.builder()
                                 .userId(userId)
                                 .activityId(activityId)
                                 .day(activityAccountDayEntity.getDay())
                                 .build());
                         if (1 != updateDayCount) {
-                            // 未更新成功则回滚
                             status.setRollbackOnly();
                             log.warn("写入创建参与活动记录，更新日账户额度不足，异常 userId: {} activityId: {} day: {}", userId, activityId, activityAccountDayEntity.getDay());
                             throw new AppException(ResponseCode.ACCOUNT_DAY_QUOTA_ERROR.getCode(), ResponseCode.ACCOUNT_DAY_QUOTA_ERROR.getInfo());
@@ -628,10 +625,9 @@ public class ActivityRepository implements IActivityRepository {
                                 .dayCountSurplus(activityAccountDayEntity.getDayCountSurplus() - 10)
                                 .build());
                         // 新创建日账户，则更新总账表中日镜像额度
-                        raffleActivityAccountDao.updateActivityAccountDaySurplusImageQuotaTen(RaffleActivityAccount.builder()
+                        raffleActivityAccountDao.updateActivityAccountDaySubtractionQuotaTen(RaffleActivityAccount.builder()
                                 .userId(userId)
                                 .activityId(activityId)
-                                .dayCountSurplus(activityAccountEntity.getDayCountSurplus())
                                 .build());
                     }
 
@@ -689,7 +685,7 @@ public class ActivityRepository implements IActivityRepository {
         RaffleActivityAccount raffleActivityAccountReq = RaffleActivityAccount.builder().activityId(activityId).userId(userId).build();
         RaffleActivityAccount raffleActivityAccount = raffleActivityAccountDao.queryActivityAccountByUserId(raffleActivityAccountReq);
 
-        // todo 新用户 默认就是 总抽10000次 每月最多抽10000次 每天最多抽10000次 每天一上来就可以抽50次
+
         if (raffleActivityAccount == null) {
             String lockKey = Constants.RedisKey.INIT_USER_ACCOUNT_LOCK + activityId + ":" + userId;
             RLock lock = redisService.getLock(lockKey);
@@ -704,11 +700,13 @@ public class ActivityRepository implements IActivityRepository {
                         raffleActivityAccount.setUserId(userId);
                         raffleActivityAccount.setActivityId(activityId);
                         raffleActivityAccount.setTotalCount(10000);
-                        raffleActivityAccount.setTotalCountSurplus(50);
-                        raffleActivityAccount.setDayCount(10000);
-                        raffleActivityAccount.setDayCountSurplus(50);
-                        raffleActivityAccount.setMonthCount(10000);
-                        raffleActivityAccount.setMonthCountSurplus(50);
+                        raffleActivityAccount.setTotalCountSurplus(10000);
+
+                        raffleActivityAccount.setMonthCount(1000);
+                        raffleActivityAccount.setMonthCountSurplus(1000);
+
+                        raffleActivityAccount.setDayCount(100);
+                        raffleActivityAccount.setDayCountSurplus(100);// todo 每人上来就能抽dayCountSurplus = 100次 每人每天抽的进度dayCount - dayCountSurplus = 0次
 
                         raffleActivityAccountDao.insert(raffleActivityAccount);
                     }

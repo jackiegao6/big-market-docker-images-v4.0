@@ -32,14 +32,6 @@ public interface IRaffleActivityAccountDao {
 
     int updateActivityAccountDaySubtractionQuotaTen(RaffleActivityAccount raffleActivityAccount);
 
-    void updateActivityAccountMonthSurplusImageQuota(RaffleActivityAccount raffleActivityAccount);
-
-    void updateActivityAccountMonthSurplusImageQuotaTen(RaffleActivityAccount raffleActivityAccount);
-
-    void updateActivityAccountDaySurplusImageQuota(RaffleActivityAccount raffleActivityAccount);
-
-    void updateActivityAccountDaySurplusImageQuotaTen(RaffleActivityAccount raffleActivityAccount);
-
     RaffleActivityAccount queryAccountByUserId(RaffleActivityAccount raffleActivityAccount);
 
 }
