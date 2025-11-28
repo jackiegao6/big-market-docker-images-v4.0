@@ -16,9 +16,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 /**
- * @author Fuzhengwei bugstack.cn @小傅哥
+ * @author gzc
  * @description 用户奖品记录消息消费者
- * @create 2024-04-06 12:09
  */
 @Slf4j
 @Component

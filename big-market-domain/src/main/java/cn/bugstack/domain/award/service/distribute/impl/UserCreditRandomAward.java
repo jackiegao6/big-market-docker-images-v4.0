@@ -7,6 +7,10 @@ import cn.bugstack.domain.award.model.entity.UserCreditAwardEntity;
 import cn.bugstack.domain.award.model.valobj.AwardStateVO;
 import cn.bugstack.domain.award.repository.IAwardRepository;
 import cn.bugstack.domain.award.service.distribute.IDistributeAward;
+import cn.bugstack.domain.credit.model.entity.TradeEntity;
+import cn.bugstack.domain.credit.model.valobj.TradeNameVO;
+import cn.bugstack.domain.credit.model.valobj.TradeTypeVO;
+import cn.bugstack.domain.credit.service.ICreditAdjustService;
 import cn.bugstack.types.common.Constants;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -25,6 +29,9 @@ public class UserCreditRandomAward implements IDistributeAward {
 
     @Resource
     private IAwardRepository repository;
+
+    @Resource
+    private ICreditAdjustService creditAdjustService;
 
     @Override
     public void giveOutPrizes(DistributeAwardEntity distributeAwardEntity) {
@@ -45,22 +52,33 @@ public class UserCreditRandomAward implements IDistributeAward {
         BigDecimal creditAmount = generateRandom(new BigDecimal(creditRange[0]), new BigDecimal(creditRange[1]));
 
         // 构建聚合对象
+        String userId = distributeAwardEntity.getUserId();
+        String userAwardOrderId = distributeAwardEntity.getOrderId();
         UserAwardRecordEntity userAwardRecordEntity = GiveOutPrizesAggregate.buildDistributeUserAwardRecordEntity(
-                distributeAwardEntity.getUserId(),
-                distributeAwardEntity.getOrderId(),
+                userId,
+                userAwardOrderId,
                 distributeAwardEntity.getAwardId(),
                 AwardStateVO.complete
         );
 
-        UserCreditAwardEntity userCreditAwardEntity = GiveOutPrizesAggregate.buildUserCreditAwardEntity(distributeAwardEntity.getUserId(), creditAmount);
+        UserCreditAwardEntity userCreditAwardEntity = GiveOutPrizesAggregate.buildUserCreditAwardEntity(userId, creditAmount);
 
         GiveOutPrizesAggregate giveOutPrizesAggregate = new GiveOutPrizesAggregate();
-        giveOutPrizesAggregate.setUserId(distributeAwardEntity.getUserId());
+        giveOutPrizesAggregate.setUserId(userId);
         giveOutPrizesAggregate.setUserAwardRecordEntity(userAwardRecordEntity);
         giveOutPrizesAggregate.setUserCreditAwardEntity(userCreditAwardEntity);
 
         // 存储发奖对象
         repository.saveGiveOutPrizesAggregate(giveOutPrizesAggregate);
+
+        // 构建积分变更订单
+        TradeEntity tradeEntity = new TradeEntity();
+        tradeEntity.setUserId(userId);
+        tradeEntity.setTradeName(TradeNameVO.CREDIT_AWARD);
+        tradeEntity.setTradeType(TradeTypeVO.FORWARD);
+        tradeEntity.setAmount(creditAmount);
+        tradeEntity.setOutBusinessNo(userAwardOrderId);
+        creditAdjustService.createOrder(tradeEntity);
     }
 
     private BigDecimal generateRandom(BigDecimal min, BigDecimal max) {

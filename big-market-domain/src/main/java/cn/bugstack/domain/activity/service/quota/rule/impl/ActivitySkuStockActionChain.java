@@ -15,9 +15,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 /**
- * @author Fuzhengwei bugstack.cn @小傅哥
- * @description 商品库存规则节点
- * @create 2024-03-23 10:25
+ * @author gzc
+ * @description sku 商品库存规则节点
  */
 @Slf4j
 @Component("activity_sku_stock_action")
@@ -30,7 +29,6 @@ public class ActivitySkuStockActionChain extends AbstractActionChain {
 
     @Override
     public boolean action(ActivitySkuEntity activitySkuEntity, ActivityEntity activityEntity, ActivityCountEntity activityCountEntity) {
-        log.info("活动责任链-商品库存处理【有效期、状态、库存(sku)】开始。sku:{} activityId:{}", activitySkuEntity.getSku(), activityEntity.getActivityId());
         // 扣减库存
         boolean status = activityDispatch.subtractionActivitySkuStock(activitySkuEntity.getSku(), activityEntity.getEndDateTime());
         // true；库存扣减成功

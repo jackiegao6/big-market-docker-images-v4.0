@@ -18,9 +18,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 
 /**
- * @author Fuzhengwei bugstack.cn @小傅哥
+ * @author gzc
  * @description 积分调额服务【正逆向，增减积分】
- * @create 2024-06-01 09:36
  */
 @Slf4j
 @Service
@@ -31,6 +30,14 @@ public class CreditAdjustService implements ICreditAdjustService {
     @Resource
     private CreditAdjustSuccessMessageEvent creditAdjustSuccessMessageEvent;
 
+    /**
+     * 创建 user_credit_order 有三处：
+     * 在签到完成后的 RebateMessageCustomer创建增加积分订单
+     * 在用积分兑换抽奖次数sku 创建扣减积分订单
+     * 在抽中随机积分 发货时创建增加积分订单
+     * @param tradeEntity 交易实体对象
+     * @return
+     */
     @Override
     public String createOrder(TradeEntity tradeEntity) {
         log.info("创建账户积分额度订单开始 userId:{} tradeName:{} amount:{}", tradeEntity.getUserId(), tradeEntity.getTradeName(), tradeEntity.getAmount());
