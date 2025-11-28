@@ -3,6 +3,7 @@ package cn.bugstack.trigger.listener;
 import cn.bugstack.domain.award.event.SendAwardMessageEvent;
 import cn.bugstack.domain.award.model.entity.DistributeAwardEntity;
 import cn.bugstack.domain.award.service.IAwardService;
+import cn.bugstack.domain.task.service.ITaskService;
 import cn.bugstack.types.event.BaseEvent;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
@@ -29,6 +30,9 @@ public class SendAwardCustomer {
     @Resource
     private IAwardService awardService;
 
+    @Resource
+    private ITaskService taskService;
+
     @RabbitListener(queuesToDeclare = @Queue(value = "${spring.rabbitmq.topic.send_award}"))
     public void listener(String message) {
         try {
@@ -36,6 +40,8 @@ public class SendAwardCustomer {
             }.getType());
             SendAwardMessageEvent.SendAwardMessage sendAwardMessage = eventMessage.getData();
             Integer awardId = sendAwardMessage.getAwardId();
+            String messageId = eventMessage.getId();
+            String userId = sendAwardMessage.getUserId();
             if (awardId == 101){
                 // 发放奖品
                 DistributeAwardEntity distributeAwardEntity = new DistributeAwardEntity();
@@ -49,9 +55,11 @@ public class SendAwardCustomer {
             }else {
                 log.info("暂未配置发奖服务 topic: {} message: {}", topic, message);
             }
+            // 更新数据库记录，task 任务表
+            taskService.updateTaskSendMessageCompleted(userId, messageId);
         } catch (Exception e) {
             log.error("监听用户奖品发送消息，消费失败 topic: {} message: {}", topic, message);
-//            throw e;
+            throw e;
         }
     }
 

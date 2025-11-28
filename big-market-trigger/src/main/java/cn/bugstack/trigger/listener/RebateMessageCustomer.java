@@ -8,6 +8,7 @@ import cn.bugstack.domain.credit.model.valobj.TradeNameVO;
 import cn.bugstack.domain.credit.model.valobj.TradeTypeVO;
 import cn.bugstack.domain.credit.service.ICreditAdjustService;
 import cn.bugstack.domain.rebate.event.SendRebateMessageEvent;
+import cn.bugstack.domain.task.service.ITaskService;
 import cn.bugstack.types.enums.ResponseCode;
 import cn.bugstack.types.event.BaseEvent;
 import cn.bugstack.types.exception.AppException;
@@ -37,6 +38,8 @@ public class RebateMessageCustomer {
     private IRaffleActivityAccountQuotaService raffleActivityAccountQuotaService;
     @Resource
     private ICreditAdjustService creditAdjustService;
+    @Resource
+    private ITaskService taskService;
 
     @RabbitListener(queuesToDeclare = @Queue(value = "${spring.rabbitmq.topic.send_rebate}"))
     public void listener(String message) {
@@ -66,6 +69,10 @@ public class RebateMessageCustomer {
                     creditAdjustService.createOrder(tradeEntity);
                     break;
             }
+
+            // 更新数据库记录，task 任务表
+            taskService.updateTaskSendMessageCompleted(rebateMessage.getUserId(), eventMessage.getId());
+
         } catch (AppException e) {
             if (ResponseCode.INDEX_DUP.getCode().equals(e.getCode())) {
                 log.warn("监听用户行为返利消息，消费重复 topic: {} message: {}", topic, message, e);
