@@ -121,7 +121,7 @@ public class RaffleActivityPartakeService extends AbstractRaffleActivityPartake{
 
         // 查询日账户额度
         ActivityAccountDayEntity activityAccountDayEntity = activityRepository.queryActivityAccountDayByUserId(userId, activityId, day);
-        if (null != activityAccountDayEntity && activityAccountDayEntity.getDayCountSurplus() <= 0) {
+        if (null != activityAccountDayEntity && activityAccountDayEntity.getDayCountSurplus() < 10) {
             throw new AppException(ResponseCode.ACCOUNT_DAY_QUOTA_10_ERROR.getCode(), ResponseCode.ACCOUNT_DAY_QUOTA_10_ERROR.getInfo());
         }
 
