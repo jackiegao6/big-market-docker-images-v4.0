@@ -26,9 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Fuzhengwei bugstack.cn @小傅哥
+ * @author gzc
  * @description 营销抽奖服务
- * @create 2024-02-14 09:21
  */
 @Slf4j
 @RestController()
@@ -68,6 +67,12 @@ public class RaffleStrategyController implements IRaffleStrategyService {
                     .build();
             log.info("抽奖策略装配完成 strategyId：{} response: {}", strategyId, JSON.toJSONString(response));
             return response;
+        } catch (AppException e) {
+            log.error("抽奖策略装配失败 strategyId：{}", strategyId);
+            return Response.<Boolean>builder()
+                    .code(e.getCode())
+                    .info(e.getInfo())
+                    .build();
         } catch (Exception e) {
             log.error("抽奖策略装配失败 strategyId：{}", strategyId, e);
             return Response.<Boolean>builder()
@@ -125,6 +130,12 @@ public class RaffleStrategyController implements IRaffleStrategyService {
                     .build();
             // 返回结果
             return response;
+        } catch (AppException e) {
+            log.error("查询抽奖奖品列表配置失败 userId:{} activityId：{}", request.getUserId(), request.getActivityId());
+            return Response.<List<RaffleAwardListResponseDTO>>builder()
+                    .code(e.getCode())
+                    .info(e.getInfo())
+                    .build();
         } catch (Exception e) {
             log.error("查询抽奖奖品列表配置失败 userId:{} activityId：{}", request.getUserId(), request.getActivityId(), e);
             return Response.<List<RaffleAwardListResponseDTO>>builder()
@@ -183,6 +194,12 @@ public class RaffleStrategyController implements IRaffleStrategyService {
                     .data(raffleStrategyRuleWeightList)
                     .build();
             return response;
+        } catch (AppException e) {
+            log.error("查询抽奖策略权重规则配置失败 userId:{} activityId：{}", request.getUserId(), request.getActivityId());
+            return Response.<List<RaffleStrategyRuleWeightResponseDTO>>builder()
+                    .code(e.getCode())
+                    .info(e.getInfo())
+                    .build();
         } catch (Exception e) {
             log.error("查询抽奖策略权重规则配置失败 userId:{} activityId：{}", request.getUserId(), request.getActivityId(), e);
             return Response.<List<RaffleStrategyRuleWeightResponseDTO>>builder()

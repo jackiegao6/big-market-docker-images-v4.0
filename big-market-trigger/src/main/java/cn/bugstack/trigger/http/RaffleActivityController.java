@@ -112,6 +112,12 @@ public class RaffleActivityController implements IRaffleActivityService {
                     .data(true)
                     .build();
             return response;
+        } catch (AppException e) {
+            log.error("活动装配，数据预热，失败 activityId:{}", activityId);
+            return Response.<Boolean>builder()
+                    .code(e.getCode())
+                    .info(e.getInfo())
+                    .build();
         } catch (Exception e) {
             log.error("活动装配，数据预热，失败 activityId:{}", activityId, e);
             return Response.<Boolean>builder()
@@ -202,7 +208,7 @@ public class RaffleActivityController implements IRaffleActivityService {
                             .build())
                     .build();
         } catch (AppException e) {
-            log.error("活动抽奖失败 userId:{} activityId:{}", request.getUserId(), request.getActivityId(), e);
+            log.error("活动抽奖失败 userId:{} activityId:{}", request.getUserId(), request.getActivityId());
             return Response.<ActivityDrawResponseDTO>builder()
                     .code(e.getCode())
                     .info(e.getInfo())
@@ -276,7 +282,7 @@ public class RaffleActivityController implements IRaffleActivityService {
                     .data(res)
                     .build();
         } catch (AppException e) {
-            log.error("活动抽奖失败 userId:{} activityId:{}", request.getUserId(), request.getActivityId(), e);
+            log.error("活动抽奖失败 userId:{} activityId:{}", request.getUserId(), request.getActivityId());
             return Response.<List<ActivityDrawResponseDTO>>builder()
                     .code(e.getCode())
                     .info(e.getInfo())
@@ -335,7 +341,7 @@ public class RaffleActivityController implements IRaffleActivityService {
                     .data(true)
                     .build();
         } catch (AppException e) {
-            log.error("日历签到返利异常 userId:{} ", userId, e);
+            log.error("日历签到返利异常 userId:{} ", userId);
             return Response.<Boolean>builder()
                     .code(e.getCode())
                     .info(e.getInfo())
@@ -369,7 +375,14 @@ public class RaffleActivityController implements IRaffleActivityService {
                     .info(ResponseCode.SUCCESS.getInfo())
                     .data(!behaviorRebateOrderEntities.isEmpty()) // 只要不为空，则表示已经做了签到
                     .build();
-        } catch (Exception e) {
+        } catch (AppException e) {
+            log.error("查询用户是否完成日历签到返利失败 userId:{}", userId);
+            return Response.<Boolean>builder()
+                    .code(e.getCode())
+                    .info(e.getInfo())
+                    .build();
+        }
+        catch (Exception e) {
             log.error("查询用户是否完成日历签到返利失败 userId:{}", userId, e);
             return Response.<Boolean>builder()
                     .code(ResponseCode.UN_ERROR.getCode())
@@ -413,7 +426,14 @@ public class RaffleActivityController implements IRaffleActivityService {
                             .monthCountSurplus(activityAccountEntity.getMonthCountSurplus())
                             .build())
                     .build();
-        } catch (Exception e) {
+        } catch (AppException e) {
+            log.error("查询用户活动账户失败 userId:{} activityId:{}", request.getUserId(), request.getActivityId());
+            return Response.<UserActivityAccountResponseDTO>builder()
+                    .code(e.getCode())
+                    .info(e.getInfo())
+                    .build();
+        }
+        catch (Exception e) {
             log.error("查询用户活动账户失败 userId:{} activityId:{}", request.getUserId(), request.getActivityId(), e);
             return Response.<UserActivityAccountResponseDTO>builder()
                     .code(ResponseCode.UN_ERROR.getCode())
@@ -456,6 +476,12 @@ public class RaffleActivityController implements IRaffleActivityService {
                     .info(ResponseCode.SUCCESS.getInfo())
                     .data(skuProductResponseDTOS)
                     .build();
+        } catch (AppException e) {
+            log.error("查询sku商品集合失败 activityId:{}", activityId);
+            return Response.<List<SkuProductResponseDTO>>builder()
+                    .code(e.getCode())
+                    .info(e.getInfo())
+                    .build();
         } catch (Exception e) {
             log.error("查询sku商品集合失败 activityId:{}", activityId, e);
             return Response.<List<SkuProductResponseDTO>>builder()
@@ -477,6 +503,12 @@ public class RaffleActivityController implements IRaffleActivityService {
                     .code(ResponseCode.SUCCESS.getCode())
                     .info(ResponseCode.SUCCESS.getInfo())
                     .data(creditAccountEntity.getAdjustAmount())
+                    .build();
+        } catch (AppException e) {
+            log.error("查询用户积分值失败 userId:{}", userId);
+            return Response.<BigDecimal>builder()
+                    .code(e.getCode())
+                    .info(e.getInfo())
                     .build();
         } catch (Exception e) {
             log.error("查询用户积分值失败 userId:{}", userId, e);
@@ -519,7 +551,7 @@ public class RaffleActivityController implements IRaffleActivityService {
                     .data(true)
                     .build();
         } catch (AppException e) {
-            log.error("积分兑换商品失败 userId:{} activityId:{}", request.getUserId(), request.getSku(), e);
+            log.error("积分兑换商品失败 userId:{} activityId:{}", request.getUserId(), request.getSku());
             return Response.<Boolean>builder()
                     .code(e.getCode())
                     .info(e.getInfo())
