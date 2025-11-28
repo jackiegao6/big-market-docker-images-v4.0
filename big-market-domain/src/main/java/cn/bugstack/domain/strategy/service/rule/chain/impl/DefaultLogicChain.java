@@ -11,9 +11,9 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 /**
- * @author Fuzhengwei bugstack.cn @小傅哥
+ * @author gzc
  * @description 默认的责任链「作为最后一个链」
- * @create 2024-01-20 10:06
+ * 有点小bug 十连抽的时候
  */
 @Slf4j
 @Component("rule_default")
