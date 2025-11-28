@@ -686,24 +686,57 @@ public class ActivityRepository implements IActivityRepository {
     @Override
     public ActivityAccountEntity queryActivityAccountEntity(Long activityId, String userId) {
         // 1. 查询总账户额度
-        RaffleActivityAccount raffleActivityAccount = raffleActivityAccountDao.queryActivityAccountByUserId(RaffleActivityAccount.builder()
-                .activityId(activityId)
-                .userId(userId)
-                .build());
+        RaffleActivityAccount raffleActivityAccountReq = RaffleActivityAccount.builder().activityId(activityId).userId(userId).build();
+        RaffleActivityAccount raffleActivityAccount = raffleActivityAccountDao.queryActivityAccountByUserId(raffleActivityAccountReq);
 
-        /**
-         * 新用户 默认就是 总抽10000次 每月最多抽10000次 每天最多抽10000次 每天一上来就可以抽50次
-         */
-        if (null == raffleActivityAccount) {
+        // todo 新用户 默认就是 总抽10000次 每月最多抽10000次 每天最多抽10000次 每天一上来就可以抽50次
+        if (raffleActivityAccount == null) {
+            String lockKey = Constants.RedisKey.INIT_USER_ACCOUNT_LOCK + activityId + ":" + userId;
+            RLock lock = redisService.getLock(lockKey);
+            try {
+                boolean isLocked = lock.tryLock(2, 3, TimeUnit.SECONDS); // tryLock 实现了自旋
+                if (isLocked) {
+                    raffleActivityAccount = raffleActivityAccountDao.queryActivityAccountByUserId(raffleActivityAccountReq);
+                    if (raffleActivityAccount == null){// 双重检查锁
+
+                        raffleActivityAccount = new RaffleActivityAccount();
+
+                        raffleActivityAccount.setUserId(userId);
+                        raffleActivityAccount.setActivityId(activityId);
+                        raffleActivityAccount.setTotalCount(10000);
+                        raffleActivityAccount.setTotalCountSurplus(50);
+                        raffleActivityAccount.setDayCount(10000);
+                        raffleActivityAccount.setDayCountSurplus(50);
+                        raffleActivityAccount.setMonthCount(10000);
+                        raffleActivityAccount.setMonthCountSurplus(50);
+
+                        raffleActivityAccountDao.insert(raffleActivityAccount);
+                    }
+                }else{
+                    raffleActivityAccount = raffleActivityAccountDao.queryActivityAccountByUserId(raffleActivityAccountReq);
+                    if (raffleActivityAccount == null) {
+                        throw new AppException(ResponseCode.INIT_ACCOUNT_LOCK_FAILED.getCode(), ResponseCode.INIT_ACCOUNT_LOCK_FAILED.getInfo());
+                    }
+                }
+
+            }catch (InterruptedException e) {
+                Thread.currentThread().interrupt(); // 恢复中断状态
+                throw new RuntimeException("给新用户创建用户时 被中断");
+            }finally {
+                if (lock.isHeldByCurrentThread()){
+                    lock.unlock();
+                }
+            }
+
             return ActivityAccountEntity.builder()
-                    .activityId(activityId)
-                    .userId(userId)
-                    .totalCount(10000)
-                    .totalCountSurplus(10000)
-                    .monthCount(10000)
-                    .monthCountSurplus(10000)
-                    .dayCount(10000)
-                    .dayCountSurplus(50)
+                        .userId(raffleActivityAccount.getUserId())
+                        .activityId(raffleActivityAccount.getActivityId())
+                        .totalCount(raffleActivityAccount.getTotalCount())
+                        .totalCountSurplus(raffleActivityAccount.getTotalCountSurplus())
+                        .dayCount(raffleActivityAccount.getDayCount())
+                        .dayCountSurplus(raffleActivityAccount.getDayCountSurplus())
+                        .monthCount(raffleActivityAccount.getMonthCount())
+                        .monthCountSurplus(raffleActivityAccount.getMonthCountSurplus())
                     .build();
         }
 
@@ -731,7 +764,7 @@ public class ActivityRepository implements IActivityRepository {
         // 如果没有创建日账户，则从总账户中获取日总额度填充。「当新创建日账户时，会获得总账户额度」
         if (null == raffleActivityAccountDay) {
             activityAccountEntity.setDayCount(raffleActivityAccount.getDayCount());
-            activityAccountEntity.setDayCountSurplus(raffleActivityAccount.getDayCount());
+            activityAccountEntity.setDayCountSurplus(raffleActivityAccount.getDayCountSurplus());
         } else {
             activityAccountEntity.setDayCount(raffleActivityAccountDay.getDayCount());
             activityAccountEntity.setDayCountSurplus(raffleActivityAccountDay.getDayCountSurplus());
@@ -740,7 +773,7 @@ public class ActivityRepository implements IActivityRepository {
         // 如果没有创建月账户，则从总账户中获取月总额度填充。「当新创建日账户时，会获得总账户额度」
         if (null == raffleActivityAccountMonth) {
             activityAccountEntity.setMonthCount(raffleActivityAccount.getMonthCount());
-            activityAccountEntity.setMonthCountSurplus(raffleActivityAccount.getMonthCount());
+            activityAccountEntity.setMonthCountSurplus(raffleActivityAccount.getMonthCountSurplus());
         } else {
             activityAccountEntity.setMonthCount(raffleActivityAccountMonth.getMonthCount());
             activityAccountEntity.setMonthCountSurplus(raffleActivityAccountMonth.getMonthCountSurplus());

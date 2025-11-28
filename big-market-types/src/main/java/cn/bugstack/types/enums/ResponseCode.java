@@ -31,6 +31,8 @@ public enum ResponseCode {
     AWARD_CONFIG_ERROR("ERR_CONFIG_001", "award_config 配置不是一个范围值，如 1,100"),
     USER_CREDIT_ACCOUNT_NO_AVAILABLE_AMOUNT("ERR_CREDIT_001", "用户积分账户额度不足"),
     TEN_DRAW_FAILED("ERR_CREDIT_100", "十连抽失败"),
+
+    INIT_ACCOUNT_LOCK_FAILED("ERR_LOCK_FAILED", "系统繁忙，账户初始化失败，请稍后重试"),
     ;
 
     private String code;
