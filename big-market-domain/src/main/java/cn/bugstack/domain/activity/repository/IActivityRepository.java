@@ -32,11 +32,7 @@ public interface IActivityRepository {
 
     void activitySkuStockConsumeSendQueue(ActivitySkuStockKeyVO activitySkuStockKeyVO);
 
-    ActivitySkuStockKeyVO takeQueueValue();
-
-    ActivitySkuStockKeyVO takeQueueValue(Long sku);
-
-    void clearQueueValue();
+    ActivitySkuStockKeyVO takeQueueValue(Long sku) throws InterruptedException;
 
     void clearQueueValue(Long sku);
 

@@ -3,7 +3,6 @@ package cn.bugstack.domain.activity.service.quota;
 import cn.bugstack.domain.activity.model.aggregate.CreateQuotaOrderAggregate;
 import cn.bugstack.domain.activity.model.entity.*;
 import cn.bugstack.domain.activity.model.valobj.ActivitySkuStockKeyVO;
-import cn.bugstack.domain.activity.model.valobj.OrderStateVO;
 import cn.bugstack.domain.activity.repository.IActivityRepository;
 import cn.bugstack.domain.activity.service.IRaffleActivitySkuStockService;
 import cn.bugstack.domain.activity.service.quota.policy.ITradePolicy;
@@ -57,18 +56,8 @@ public class RaffleActivityAccountQuotaService extends AbstractRaffleActivityAcc
     }
 
     @Override
-    public ActivitySkuStockKeyVO takeQueueValue() throws InterruptedException {
-        return activityRepository.takeQueueValue();
-    }
-
-    @Override
     public ActivitySkuStockKeyVO takeQueueValue(Long sku) throws InterruptedException {
         return activityRepository.takeQueueValue(sku);
-    }
-
-    @Override
-    public void clearQueueValue() {
-        activityRepository.clearQueueValue();
     }
 
     @Override

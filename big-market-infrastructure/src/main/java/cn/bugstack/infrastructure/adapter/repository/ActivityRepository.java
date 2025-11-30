@@ -291,37 +291,27 @@ public class ActivityRepository implements IActivityRepository {
         String cacheKey = Constants.RedisKey.ACTIVITY_SKU_COUNT_QUERY_KEY + Constants.UNDERLINE + activitySkuStockKeyVO.getSku();
         RBlockingQueue<ActivitySkuStockKeyVO> blockingQueue = redisService.getBlockingQueue(cacheKey);
         RDelayedQueue<ActivitySkuStockKeyVO> delayedQueue = redisService.getDelayedQueue(blockingQueue);
+        // 元素会先放入redisson的内部sorted-set（延迟结构）
+        // 延迟到了后自动转移到阻塞队列 消费端可以通过take获取
         delayedQueue.offer(activitySkuStockKeyVO, 3, TimeUnit.SECONDS);
     }
 
     @Override
-    @Deprecated
-    public ActivitySkuStockKeyVO takeQueueValue() {
-        String cacheKey = Constants.RedisKey.ACTIVITY_SKU_COUNT_QUERY_KEY;
-        RBlockingQueue<ActivitySkuStockKeyVO> destinationQueue = redisService.getBlockingQueue(cacheKey);
-        return destinationQueue.poll();
-    }
-
-    @Override
-    public ActivitySkuStockKeyVO takeQueueValue(Long sku) {
+    public ActivitySkuStockKeyVO takeQueueValue(Long sku) throws InterruptedException {
         String cacheKey = Constants.RedisKey.ACTIVITY_SKU_COUNT_QUERY_KEY + Constants.UNDERLINE + sku;
         RBlockingQueue<ActivitySkuStockKeyVO> destinationQueue = redisService.getBlockingQueue(cacheKey);
-        return destinationQueue.poll();
-    }
-
-    @Deprecated
-    @Override
-    public void clearQueueValue() {
-        String cacheKey = Constants.RedisKey.ACTIVITY_SKU_COUNT_QUERY_KEY;
-        RBlockingQueue<ActivitySkuStockKeyVO> destinationQueue = redisService.getBlockingQueue(cacheKey);
-        destinationQueue.clear();
+        // take 会阻塞直到有数据进入延迟队列
+        return destinationQueue.take();
     }
 
     @Override
     public void clearQueueValue(Long sku) {
         String cacheKey = Constants.RedisKey.ACTIVITY_SKU_COUNT_QUERY_KEY + Constants.UNDERLINE + sku;
-        RBlockingQueue<ActivitySkuStockKeyVO> destinationQueue = redisService.getBlockingQueue(cacheKey);
-        destinationQueue.clear();
+        RBlockingQueue<ActivitySkuStockKeyVO> blockedQueue = redisService.getBlockingQueue(cacheKey);
+        RDelayedQueue<ActivitySkuStockKeyVO> delayedQueue = redisService.getDelayedQueue(blockedQueue);
+
+        blockedQueue.clear();
+        delayedQueue.destroy();
     }
 
     @Override
