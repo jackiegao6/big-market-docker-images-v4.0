@@ -7,18 +7,15 @@ import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author Fuzhengwei bugstack.cn @小傅哥
+ * @author gzc
  * @description 发送MQ消息任务队列
- * @create 2024-04-06 10:47
  */
 @Slf4j
 @Component()
@@ -26,8 +23,6 @@ public class SendMessageTaskJob {
 
     @Resource
     private ITaskService taskService;
-    @Resource
-    private ThreadPoolExecutor executor;
     @Resource
     private IDBRouterStrategy dbRouter;
     @Resource
