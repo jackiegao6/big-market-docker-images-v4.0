@@ -7,6 +7,7 @@ import cn.bugstack.domain.task.service.ITaskService;
 import cn.bugstack.types.event.BaseEvent;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
+import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -32,6 +33,7 @@ public class SendAwardCustomer {
     @Resource
     private ITaskService taskService;
 
+    @Timed(value = "SendAwardCustomer", description = "用户奖品记录消息消费者")
     @RabbitListener(queuesToDeclare = @Queue(value = "${spring.rabbitmq.topic.send_award}"))
     public void listener(String message) {
         try {

@@ -4,6 +4,7 @@ import cn.bugstack.domain.activity.service.IRaffleActivitySkuStockService;
 import cn.bugstack.types.event.BaseEvent;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
+import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -13,9 +14,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 /**
- * @author Fuzhengwei bugstack.cn @小傅哥
+ * @author gzc
  * @description 活动sku库存耗尽
- * @create 2024-03-30 12:31
  */
 @Slf4j
 @Component
@@ -27,6 +27,7 @@ public class ActivitySkuStockZeroCustomer {
     @Resource
     private IRaffleActivitySkuStockService skuStock;
 
+    @Timed(value = "ActivitySkuStockZeroCustomer", description = "活动库存为0消费者")
     @RabbitListener(queuesToDeclare = @Queue(value = "${spring.rabbitmq.topic.activity_sku_stock_zero}"))
     public void listener(String message) {
         try {

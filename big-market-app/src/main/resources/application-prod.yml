@@ -2,7 +2,7 @@ server:
   port: 8091
   tomcat:
     mbeanregistry:
-      enabled: true
+      enabled: true # 暴露给外部
     threads:
       max: 800        # 设定处理客户请求的线程的最大数目，决定了服务器可以同时响应客户请求的数,默认200
       min-spare: 200   # 初始化线程数,最小空闲线程数,默认是10
@@ -175,6 +175,22 @@ xxl:
       logpath: ./data/applogs/xxl-job/jobhandler
       # 执行器日志文件保存天数 [选填] ： 过期日志自动清理, 限制值大于等于3时生效; 否则, 如-1, 关闭自动清理功能；
       logretentiondays: -1
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*" # 暴露所有端点
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true # 启用普罗米修斯
+
 
 # 日志
 logging:

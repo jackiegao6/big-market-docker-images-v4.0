@@ -9,6 +9,7 @@ import cn.bugstack.types.event.BaseEvent;
 import cn.bugstack.types.exception.AppException;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
+import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -18,9 +19,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 /**
- * @author Fuzhengwei bugstack.cn @小傅哥
+ * @author gzc
  * @description 积分调整成功消息
- * @create 2024-06-08 19:38
  */
 @Slf4j
 @Component
@@ -33,6 +33,7 @@ public class CreditAdjustSuccessCustomer {
     @Resource
     private ITaskService taskService;
 
+    @Timed(value = "CreditAdjustSuccessCustomer", description = "积分调整服务消费者")
     @RabbitListener(queuesToDeclare = @Queue(value = "${spring.rabbitmq.topic.credit_adjust_success}"))
     public void listener(String message) {
         try {

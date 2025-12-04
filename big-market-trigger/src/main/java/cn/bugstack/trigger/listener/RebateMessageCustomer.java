@@ -14,6 +14,7 @@ import cn.bugstack.types.event.BaseEvent;
 import cn.bugstack.types.exception.AppException;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
+import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -24,9 +25,8 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 
 /**
- * @author Fuzhengwei bugstack.cn @小傅哥
+ * @author gzc
  * @description 监听；行为返利消息
- * @create 2024-05-01 13:58
  */
 @Slf4j
 @Component
@@ -41,6 +41,7 @@ public class RebateMessageCustomer {
     @Resource
     private ITaskService taskService;
 
+    @Timed(value = "RebateMessageCustomer", description = "返利消息消费者")
     @RabbitListener(queuesToDeclare = @Queue(value = "${spring.rabbitmq.topic.send_rebate}"))
     public void listener(String message) {
         try {
