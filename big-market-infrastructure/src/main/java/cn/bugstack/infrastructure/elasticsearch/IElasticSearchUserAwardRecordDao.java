@@ -6,6 +6,7 @@ import java.util.List;
 
 public interface IElasticSearchUserAwardRecordDao {
 
-    List<UserAwardRecord> queryUserAwardRecordList();
+    // es 的 jdbc试用期只有一个月 及时更新
+    List<UserAwardRecord> queryUserAwardRecordList(String activityId);
 
 }

@@ -1,10 +1,13 @@
 server:
   port: 8091
   tomcat:
+    mbeanregistry:
+      enabled: true
     threads:
-      max: 200        # 设定处理客户请求的线程的最大数目，决定了服务器可以同时响应客户请求的数,默认200
-      min-spare: 50   # 初始化线程数,最小空闲线程数,默认是10
-    accept-count: 10  # 等待队列长度
+      max: 800        # 设定处理客户请求的线程的最大数目，决定了服务器可以同时响应客户请求的数,默认200
+      min-spare: 200   # 初始化线程数,最小空闲线程数,默认是10
+    accept-count: 1000  # 等待队列长度
+    max-connections: 20000
 
 # 应用配置
 app:
@@ -66,7 +69,7 @@ mini-db-router:
         type-class-name: com.zaxxer.hikari.HikariDataSource
         pool:
           pool-name: Retail_HikariCP
-          minimum-idle: 15 #最小空闲连接数量
+          minimum-idle: 20 #最小空闲连接数量
           idle-timeout: 180000 #空闲连接存活最大时间，默认600000（10分钟）
           maximum-pool-size: 25 #连接池最大连接数，默认是10
           auto-commit: true  #此属性控制从池返回的连接的默认自动提交行为,默认值：true

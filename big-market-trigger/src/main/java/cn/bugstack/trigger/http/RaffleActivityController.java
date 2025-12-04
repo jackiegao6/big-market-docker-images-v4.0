@@ -172,7 +172,7 @@ public class RaffleActivityController implements IRaffleActivityService {
                         .build();
             }
 
-            // 3. 参与活动 - 创建参与记录订单
+            // 3. 参与活动 - 创建参与记录订单 并执行账户额度扣减
             UserRaffleOrderEntity orderEntity = raffleActivityPartakeService.createOrder(request.getUserId(), request.getActivityId());
 
             // 4. 抽奖策略 - 执行抽奖
@@ -577,7 +577,7 @@ public class RaffleActivityController implements IRaffleActivityService {
 
             // 2. 业务逻辑 es聚合查询
             List<UserAwardRecordEntity> userAwardRecordEntities = awardService.queryRecentRaffleUsers(activityId);
-            List<OneHourRaffleUserListResponseDTO> res = new ArrayList<>(11);
+            List<OneHourRaffleUserListResponseDTO> res = new ArrayList<>(51);
             for (UserAwardRecordEntity userAwardRecordEntity : userAwardRecordEntities) {
                 OneHourRaffleUserListResponseDTO oneHourRaffleUserListResponseDTO = OneHourRaffleUserListResponseDTO.builder()
                                 .userId(userAwardRecordEntity.getUserId())
