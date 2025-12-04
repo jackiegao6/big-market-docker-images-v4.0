@@ -6,13 +6,10 @@ import cn.bugstack.middleware.db.router.strategy.IDBRouterStrategy;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author gzc
@@ -26,8 +23,6 @@ public class SendMessageTaskJob {
     private ITaskService taskService;
     @Resource
     private IDBRouterStrategy dbRouter;
-    @Resource
-    private RedissonClient redissonClient;
 
     @Timed(value = "SendMessageTaskJob_DB1", description = "发送MQ消息任务队列1")
     @XxlJob("SendMessageTaskJob_DB1")

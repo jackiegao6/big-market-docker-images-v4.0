@@ -2,6 +2,7 @@ package cn.bugstack.infrastructure.dao;
 
 import cn.bugstack.infrastructure.dao.po.StrategyAward;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -21,8 +22,9 @@ public interface IStrategyAwardDao {
 
     void updateStrategyAwardStock(StrategyAward strategyAward);
 
+    void updateStrategyAwardStockBatch(@Param("strategyId") Long strategyId, @Param("awardId") Integer awardId, @Param("deductCount") int deductCount);
+
     StrategyAward queryStrategyAward(StrategyAward strategyAwardReq);
 
     List<StrategyAward> queryOpenActivityStrategyAwardList();
-
 }

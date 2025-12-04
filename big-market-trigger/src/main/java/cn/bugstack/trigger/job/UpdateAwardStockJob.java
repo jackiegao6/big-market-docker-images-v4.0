@@ -31,7 +31,7 @@ public class UpdateAwardStockJob {
     @XxlJob("updateAwardStockJob")
     public void exec() {
         try {
-            // 拿到open状态的活动 的所有配置的奖品列表
+            // 拿到所有open活动 的 所有奖品
             List<StrategyAwardStockKeyVO> awards = raffleAward.queryOpenActivityStrategyAwardList();
             if (null == awards)
                 return;
@@ -41,11 +41,16 @@ public class UpdateAwardStockJob {
                 executor.execute(() -> {
                     try {
                         // 从各个奖品库存的阻塞队列中 take
-                        StrategyAwardStockKeyVO queueStrategyAwardStockKeyVO = raffleStock.takeQueueValue(strategyAwardStockKeyVO.getStrategyId(), strategyAwardStockKeyVO.getAwardId());
-                        if (null == queueStrategyAwardStockKeyVO)
+//                        StrategyAwardStockKeyVO queueStrategyAwardStockKeyVO = raffleStock.takeQueueValue(strategyAwardStockKeyVO.getStrategyId(), strategyAwardStockKeyVO.getAwardId());
+                        List<StrategyAwardStockKeyVO> strategyAwardStockKeyVOS = raffleStock.takeQueueValueBatch(strategyAwardStockKeyVO.getStrategyId(), strategyAwardStockKeyVO.getAwardId());
+                        if (null == strategyAwardStockKeyVOS)
                             return;
-                        raffleStock.updateStrategyAwardStock(queueStrategyAwardStockKeyVO.getStrategyId(), queueStrategyAwardStockKeyVO.getAwardId());
-                        log.info("定时任务，更新奖品消耗库存 strategyId:{} awardId:{}", queueStrategyAwardStockKeyVO.getStrategyId(), queueStrategyAwardStockKeyVO.getAwardId());
+
+                        int totalCount = strategyAwardStockKeyVOS.size();
+//                        raffleStock.updateStrategyAwardStock(queueStrategyAwardStockKeyVO.getStrategyId(), queueStrategyAwardStockKeyVO.getAwardId());
+                        raffleStock.updateStrategyAwardStockBatch(strategyAwardStockKeyVO.getStrategyId(), strategyAwardStockKeyVO.getAwardId(), totalCount);
+
+                        log.info("定时任务，更新奖品消耗库存 strategyId:{} awardId:{}", strategyAwardStockKeyVO.getStrategyId(), strategyAwardStockKeyVO.getAwardId());
                     } catch (InterruptedException e) {
                         log.error("定时任务，更新奖品消耗库存失败 strategyId:{} awardId:{}", strategyAwardStockKeyVO.getStrategyId(), strategyAwardStockKeyVO.getAwardId());
                     }

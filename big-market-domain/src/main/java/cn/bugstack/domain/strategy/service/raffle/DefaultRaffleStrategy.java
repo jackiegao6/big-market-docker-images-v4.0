@@ -66,8 +66,18 @@ public class DefaultRaffleStrategy extends AbstractRaffleStrategy implements IRa
     }
 
     @Override
+    public List<StrategyAwardStockKeyVO> takeQueueValueBatch(Long strategyId, Integer awardId) throws InterruptedException {
+        return repository.takeQueueValueBatch(strategyId, awardId);
+    }
+
+    @Override
     public void updateStrategyAwardStock(Long strategyId, Integer awardId) {
         repository.updateStrategyAwardStock(strategyId, awardId);
+    }
+
+    @Override
+    public void updateStrategyAwardStockBatch(Long strategyId, Integer awardId, int totalCount) {
+        repository.updateStrategyAwardStockBatch(strategyId, awardId, totalCount);
     }
 
     @Override

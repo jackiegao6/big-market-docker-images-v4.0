@@ -85,6 +85,8 @@ public interface IStrategyRepository {
      */
     StrategyAwardStockKeyVO takeQueueValue(Long strategyId, Integer awardId) throws InterruptedException;
 
+    List<StrategyAwardStockKeyVO> takeQueueValueBatch(Long strategyId, Integer awardId);
+
     /**
      * 更新奖品库存消耗
      *
@@ -92,6 +94,9 @@ public interface IStrategyRepository {
      * @param awardId    奖品ID
      */
     void updateStrategyAwardStock(Long strategyId, Integer awardId);
+
+    void updateStrategyAwardStockBatch(Long strategyId, Integer awardId, int totalCount);
+
 
     /**
      * 根据策略ID+奖品ID的唯一值组合，查询奖品信息

@@ -41,6 +41,12 @@
         where strategy_id = #{strategyId} and award_id = #{awardId} and award_count_surplus > 0
     </update>
 
+    <update id="updateStrategyAwardStockBatch">
+        update strategy_award
+        set award_count_surplus = award_count_surplus - #{deductCount}
+        where strategy_id = #{strategyId} and award_id = #{awardId} and award_count_surplus > #{deductCount}
+    </update>
+
     <select id="queryStrategyAward" parameterType="cn.bugstack.infrastructure.dao.po.StrategyAward" resultMap="dataMap">
         select strategy_id, award_id, award_title, award_subtitle, award_count, award_count_surplus, award_rate, rule_models, sort
         from strategy_award

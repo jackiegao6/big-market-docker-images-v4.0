@@ -266,20 +266,36 @@ public class StrategyRepository implements IStrategyRepository {
         return lock;
     }
 
+
+
     @Override
     public void awardStockConsumeSendQueue(StrategyAwardStockKeyVO strategyAwardStockKeyVO) {
         String cacheKey = Constants.RedisKey.STRATEGY_AWARD_COUNT_QUERY_KEY + Constants.UNDERLINE + strategyAwardStockKeyVO.getStrategyId() + Constants.UNDERLINE + strategyAwardStockKeyVO.getAwardId();
+        // 目标队列本质： list
         RBlockingQueue<StrategyAwardStockKeyVO> blockingQueue = redisService.getBlockingQueue(cacheKey);
+        // 延迟逻辑包装器本质： ZSet + 消息通知
         RDelayedQueue<StrategyAwardStockKeyVO> delayedQueue = redisService.getDelayedQueue(blockingQueue);
+        // 先放入延迟队列 再放入目标队列
         delayedQueue.offer(strategyAwardStockKeyVO, 3, TimeUnit.SECONDS);
     }
 
     @Override
-    public StrategyAwardStockKeyVO takeQueueValue(Long strategyId, Integer awardId) throws InterruptedException {
+    public StrategyAwardStockKeyVO takeQueueValue(Long strategyId, Integer awardId){
         String cacheKey = Constants.RedisKey.STRATEGY_AWARD_COUNT_QUERY_KEY + Constants.UNDERLINE + strategyId + Constants.UNDERLINE + awardId;
         RBlockingQueue<StrategyAwardStockKeyVO> destinationQueue = redisService.getBlockingQueue(cacheKey);
 
         return destinationQueue.poll();// 为了快速清空 直接用poll() 取不到就break ，不要阻塞等待 浪费连接资源
+    }
+
+    @Override
+    public List<StrategyAwardStockKeyVO> takeQueueValueBatch(Long strategyId, Integer awardId){
+        String cacheKey = Constants.RedisKey.STRATEGY_AWARD_COUNT_QUERY_KEY + Constants.UNDERLINE + strategyId + Constants.UNDERLINE + awardId;
+        RBlockingQueue<StrategyAwardStockKeyVO> destinationQueue = redisService.getBlockingQueue(cacheKey);
+
+        int MAX_BATCH_SIZE = 50;
+        List<StrategyAwardStockKeyVO> batchList = new ArrayList<>(MAX_BATCH_SIZE);
+        destinationQueue.drainTo(batchList, MAX_BATCH_SIZE);
+        return batchList;// 为了快速清空 直接用poll() 取不到就break ，不要阻塞等待 浪费连接资源
     }
 
     @Override
@@ -288,6 +304,11 @@ public class StrategyRepository implements IStrategyRepository {
         strategyAward.setStrategyId(strategyId);
         strategyAward.setAwardId(awardId);
         strategyAwardDao.updateStrategyAwardStock(strategyAward);
+    }
+
+    @Override
+    public void updateStrategyAwardStockBatch(Long strategyId, Integer awardId, int totalCount) {
+        strategyAwardDao.updateStrategyAwardStockBatch(strategyId, awardId, totalCount);
     }
 
     @Override
@@ -427,5 +448,7 @@ public class StrategyRepository implements IStrategyRepository {
 
         return strategyAwardStockKeyVOS;
     }
+
+
 
 }

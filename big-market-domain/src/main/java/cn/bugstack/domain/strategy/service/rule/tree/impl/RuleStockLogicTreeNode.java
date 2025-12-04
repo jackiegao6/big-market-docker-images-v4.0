@@ -6,7 +6,6 @@ import cn.bugstack.domain.strategy.repository.IStrategyRepository;
 import cn.bugstack.domain.strategy.service.armory.IStrategyDispatch;
 import cn.bugstack.domain.strategy.service.rule.tree.ILogicTreeNode;
 import cn.bugstack.domain.strategy.service.rule.tree.factory.DefaultTreeFactory;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -35,7 +34,7 @@ public class RuleStockLogicTreeNode implements ILogicTreeNode {
         if (status) {
             log.info("规则过滤-库存扣减-成功 userId:{} strategyId:{} awardId:{}", userId, strategyId, awardId);
 
-            // 写入延迟队列，延迟消费更新数据库记录。【在trigger的job；UpdateAwardStockJob 下消费队列，更新数据库记录】
+            // 奖品的库存扣减 写入延迟队列 延迟消费更新数据库记录
             strategyRepository.awardStockConsumeSendQueue(StrategyAwardStockKeyVO.builder()
                     .strategyId(strategyId)
                     .awardId(awardId)

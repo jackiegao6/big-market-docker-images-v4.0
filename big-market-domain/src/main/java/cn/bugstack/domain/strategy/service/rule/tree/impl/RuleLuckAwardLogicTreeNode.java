@@ -13,9 +13,8 @@ import javax.annotation.Resource;
 import java.util.Date;
 
 /**
- * @author Fuzhengwei bugstack.cn @小傅哥
+ * @author gzc
  * @description 兜底奖励节点
- * @create 2024-01-27 11:23
  */
 @Slf4j
 @Component("rule_luck_award")
@@ -36,7 +35,7 @@ public class RuleLuckAwardLogicTreeNode implements ILogicTreeNode {
         Integer luckAwardId = Integer.valueOf(split[0]);
         String awardRuleValue = split.length > 1 ? split[1] : "";
 
-        // 写入延迟队列，延迟消费更新数据库记录。【在trigger的job；UpdateAwardStockJob 下消费队列，更新数据库记录】
+        // 奖品的库存扣减 写入延迟队列 延迟消费更新数据库记录
         strategyRepository.awardStockConsumeSendQueue(StrategyAwardStockKeyVO.builder()
                 .strategyId(strategyId)
                 .awardId(luckAwardId)
