@@ -32,8 +32,6 @@ public class RuleStockLogicTreeNode implements ILogicTreeNode {
         Boolean status = strategyDispatch.subtractionAwardStock(strategyId, awardId, endDateTime);
         // true；库存扣减成功，TAKE_OVER 规则节点接管，返回奖品ID，奖品规则配置
         if (status) {
-            log.info("规则过滤-库存扣减-成功 userId:{} strategyId:{} awardId:{}", userId, strategyId, awardId);
-
             // 奖品的库存扣减 写入延迟队列 延迟消费更新数据库记录
             strategyRepository.awardStockConsumeSendQueue(StrategyAwardStockKeyVO.builder()
                     .strategyId(strategyId)

@@ -40,17 +40,12 @@ public class UpdateAwardStockJob {
             for (StrategyAwardStockKeyVO strategyAwardStockKeyVO : awards) {
                 executor.execute(() -> {
                     try {
-                        // 从各个奖品库存的阻塞队列中 take
-//                        StrategyAwardStockKeyVO queueStrategyAwardStockKeyVO = raffleStock.takeQueueValue(strategyAwardStockKeyVO.getStrategyId(), strategyAwardStockKeyVO.getAwardId());
                         List<StrategyAwardStockKeyVO> strategyAwardStockKeyVOS = raffleStock.takeQueueValueBatch(strategyAwardStockKeyVO.getStrategyId(), strategyAwardStockKeyVO.getAwardId());
                         if (null == strategyAwardStockKeyVOS)
                             return;
 
                         int totalCount = strategyAwardStockKeyVOS.size();
-//                        raffleStock.updateStrategyAwardStock(queueStrategyAwardStockKeyVO.getStrategyId(), queueStrategyAwardStockKeyVO.getAwardId());
                         raffleStock.updateStrategyAwardStockBatch(strategyAwardStockKeyVO.getStrategyId(), strategyAwardStockKeyVO.getAwardId(), totalCount);
-
-                        log.info("定时任务，更新奖品消耗库存 strategyId:{} awardId:{}", strategyAwardStockKeyVO.getStrategyId(), strategyAwardStockKeyVO.getAwardId());
                     } catch (InterruptedException e) {
                         log.error("定时任务，更新奖品消耗库存失败 strategyId:{} awardId:{}", strategyAwardStockKeyVO.getStrategyId(), strategyAwardStockKeyVO.getAwardId());
                     }

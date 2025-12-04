@@ -36,7 +36,6 @@ public class BlackListLogicChain extends AbstractLogicChain {
         String[] userBlackIds = splitRuleValue[1].split(Constants.SPLIT);
         for (String userBlackId : userBlackIds) {
             if (userId.equals(userBlackId)) {
-                log.info("抽奖责任链-黑名单接管 userId: {} strategyId: {} ruleModel: {} awardId: {}", userId, strategyId, ruleModel(), awardId);
                 return DefaultChainFactory.StrategyAwardVO.builder()
                         .awardId(awardId)
                         .logicModel(ruleModel())

@@ -275,7 +275,7 @@ public class ActivityRepository implements IActivityRepository {
         long expireMillis = endDateTime.getTime() - System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1);
         Boolean lock = redisService.setNx(lockKey, expireMillis, TimeUnit.MILLISECONDS);
         if (!lock) {
-            log.info("活动sku库存加锁失败 {}", lockKey);
+            log.warn("活动sku库存加锁失败 {}", lockKey);
         }
 
         if (surplus == 0){

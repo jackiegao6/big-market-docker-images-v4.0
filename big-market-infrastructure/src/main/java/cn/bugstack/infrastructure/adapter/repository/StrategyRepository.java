@@ -261,7 +261,7 @@ public class StrategyRepository implements IStrategyRepository {
             lock = redisService.setNx(lockKey);
         }
         if (!lock) {
-            log.info("策略奖品库存加锁失败 {}", lockKey);
+            log.warn("策略奖品库存加锁失败 {}", lockKey);
         }
         return lock;
     }

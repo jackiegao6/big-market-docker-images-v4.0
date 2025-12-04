@@ -24,7 +24,6 @@ public class RuleLockLogicTreeNode implements ILogicTreeNode {
 
     @Override
     public DefaultTreeFactory.TreeActionEntity logic(String userId, Long strategyId, Integer awardId, String ruleValue, Date endDateTime) {
-        log.info("规则过滤-次数锁 userId:{} strategyId:{} awardId:{}", userId, strategyId, awardId);
 
         long raffleCount = 0L;
         try {
@@ -43,8 +42,6 @@ public class RuleLockLogicTreeNode implements ILogicTreeNode {
                     .ruleLogicCheckType(RuleLogicCheckTypeVO.ALLOW)
                     .build();
         }
-
-        log.info("规则过滤-次数锁【拦截】 userId:{} strategyId:{} awardId:{} raffleCount:{} userRaffleCount:{}", userId, strategyId, awardId, userRaffleCount, userRaffleCount);
 
         // 用户抽奖次数小于规则限定值，规则拦截
         return DefaultTreeFactory.TreeActionEntity.builder()

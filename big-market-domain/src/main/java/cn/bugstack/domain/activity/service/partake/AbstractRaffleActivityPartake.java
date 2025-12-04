@@ -10,7 +10,6 @@ import cn.bugstack.domain.activity.repository.IActivityRepository;
 import cn.bugstack.domain.activity.service.IRaffleActivityPartakeService;
 import cn.bugstack.types.enums.ResponseCode;
 import cn.bugstack.types.exception.AppException;
-import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Date;
@@ -60,7 +59,6 @@ public abstract class AbstractRaffleActivityPartake implements IRaffleActivityPa
         // 2. 查询未被使用的活动参与订单记录
         UserRaffleOrderEntity userRaffleOrderEntity = activityRepository.queryNoUsedRaffleOrder(partakeRaffleActivityEntity);
         if (null != userRaffleOrderEntity) {
-            log.info("\n==================>创建参与活动订单存在 userId:{} activityId:{} userRaffleOrderEntity:{}", userId, activityId, JSON.toJSONString(userRaffleOrderEntity));
             return userRaffleOrderEntity;
         }
 
@@ -75,8 +73,7 @@ public abstract class AbstractRaffleActivityPartake implements IRaffleActivityPa
 
         // 6. 保存聚合对象 - 一个领域内的一个聚合是一个事务操作
         activityRepository.saveCreatePartakeOrderAggregate(createPartakeOrderAggregate);
-        log.info("创建 user_raffle_order state: create userId:{} activityId:{} orderId:{}", userId, activityId, userRaffleOrder.getOrderId());
-        // 7. 返回订单信息
+
         return userRaffleOrder;
     }
 
@@ -93,7 +90,7 @@ public abstract class AbstractRaffleActivityPartake implements IRaffleActivityPa
         String userId = partakeRaffleActivityEntity.getUserId();
         Long activityId = partakeRaffleActivityEntity.getActivityId();
         Date currentDate = new Date();
-        log.info("创建活动抽奖单开始 userId:{} activityId:{}", userId, activityId);
+
         // 1. 活动查询
         ActivityEntity activityEntity = activityRepository.queryRaffleActivityByActivityId(activityId);
 
@@ -119,7 +116,6 @@ public abstract class AbstractRaffleActivityPartake implements IRaffleActivityPa
 
         // 6. 保存聚合对象 - 一个领域内的一个聚合是一个事务操作
         activityRepository.saveCreatePartakeOrderAggregateTen(createPartakeOrderAggregate);
-        log.info("创建十次活动抽奖单完成 userId:{} activityId:{} orderId:{}", userId, activityId, userTenRaffleOrderEntity.getOrderIds());
         // 7. 返回订单信息
         return userTenRaffleOrderEntity;
     }

@@ -69,7 +69,6 @@ public class AwardService implements IAwardService {
         // 存储聚合对象 - 一个事务下，用户的中奖记录
         awardRepository.saveUserAwardRecord(userAwardRecordAggregate);
 
-        log.info("userAwardRecord state: create userId:{} 发奖记录订单:{}", userAwardRecordEntity.getUserId(), userAwardRecordEntity.getOrderId());
     }
 
     @Override
@@ -84,7 +83,6 @@ public class AwardService implements IAwardService {
             });
         }
 
-        log.info("已将 {} 个任务提交至线程池", userAwardRecordEntityList.size());
     }
 
     @Override

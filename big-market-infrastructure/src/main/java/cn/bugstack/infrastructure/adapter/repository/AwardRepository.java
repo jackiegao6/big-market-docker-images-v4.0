@@ -100,7 +100,6 @@ public class AwardRepository implements IAwardRepository {
                     taskDao.insert(task);
                     // 更新抽奖单
                     int count = userRaffleOrderDao.updateUserRaffleOrderStateUsed(userRaffleOrderReq);
-                    log.info("更新 user_raffle_order state: used userId:{} activityId:{} orderId:{}", userId, activityId, userRaffleOrderReq.getOrderId());
                     if (1 != count) {
                         status.setRollbackOnly();
                         log.error("写入发奖记录，用户抽奖单已使用过，不可重复抽奖 userId: {} activityId: {} awardId: {}", userId, activityId, awardId);
@@ -120,7 +119,6 @@ public class AwardRepository implements IAwardRepository {
         try {
             // 发送消息【在事务外执行，如果失败还有任务补偿】
             eventPublisher.publish(task.getTopic(), task.getMessage());
-            log.info("写入发奖记录，发送MQ消息 state: create userId: {} orderId:{} topic: {}", userId, userAwardRecordEntity.getOrderId(), task.getTopic());
         } catch (Exception e) {
             log.error("写入发奖记录，发送MQ消息 state: fail userId: {} topic: {}", userId, task.getTopic());
             taskDao.updateTaskSendMessageFail(task);

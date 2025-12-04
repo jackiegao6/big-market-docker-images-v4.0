@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -58,7 +57,6 @@ public class RuleWeightLogicChain extends AbstractLogicChain {
         // 4. 权重抽奖
         if (null != analyticalValue) {
             Integer awardId = strategyDispatch.getRandomAwardId(strategyId, analyticalValue);
-            log.info("抽奖责任链-权重接管 userId:{} strategyId:{} ruleModel:{} awardId:{}", userId, strategyId, ruleModel(), awardId);
             return DefaultChainFactory.StrategyAwardVO.builder()
                     .awardId(awardId)
                     .logicModel(ruleModel())

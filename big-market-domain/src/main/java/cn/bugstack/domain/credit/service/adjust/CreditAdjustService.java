@@ -40,7 +40,6 @@ public class CreditAdjustService implements ICreditAdjustService {
      */
     @Override
     public String createOrder(TradeEntity tradeEntity) {
-        log.info("创建账户积分额度订单开始 userId:{} tradeName:{} amount:{}", tradeEntity.getUserId(), tradeEntity.getTradeName(), tradeEntity.getAmount());
         // 0. 判断处理，逆向交易，扣减积分，需要查询账户是否存在以及积分额度是否充足
         if (TradeTypeVO.REVERSE.equals(tradeEntity.getTradeType())) {
             CreditAccountEntity creditAccountEntity = creditRepository.queryUserCreditAccount(tradeEntity.getUserId());
@@ -82,7 +81,6 @@ public class CreditAdjustService implements ICreditAdjustService {
 
         // 5. 保存积分交易订单
         creditRepository.saveUserCreditTradeOrder(tradeAggregate);
-        log.info("创建账户积分额度订单完成 userId:{} orderId:{}", tradeEntity.getUserId(), creditOrderEntity.getOrderId());
 
         return creditOrderEntity.getOrderId();
     }

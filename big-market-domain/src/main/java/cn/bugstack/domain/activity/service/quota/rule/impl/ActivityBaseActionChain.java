@@ -35,7 +35,6 @@ public class ActivityBaseActionChain extends AbstractActionChain {
         if (activitySkuEntity.getStockCountSurplus() <= 0) {
             throw new AppException(ResponseCode.ACTIVITY_SKU_STOCK_ERROR.getCode(), ResponseCode.ACTIVITY_SKU_STOCK_ERROR.getInfo());
         }
-        log.info("活动责任链-基础信息【有效期、状态】校验完成 sku:{} activityId:{}", activitySkuEntity.getSku(), activityEntity.getActivityId());
         return next().action(activitySkuEntity, activityEntity, activityCountEntity);
     }
 
