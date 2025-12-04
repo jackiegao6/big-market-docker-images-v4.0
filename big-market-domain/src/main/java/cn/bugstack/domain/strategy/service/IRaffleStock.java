@@ -3,19 +3,10 @@ package cn.bugstack.domain.strategy.service;
 import cn.bugstack.domain.strategy.model.valobj.StrategyAwardStockKeyVO;
 
 /**
- * @author Fuzhengwei bugstack.cn @小傅哥
+ * @author gzc
  * @description 抽奖库存相关服务，获取库存消耗队列
- * @create 2024-02-09 12:17
  */
 public interface IRaffleStock {
-
-    /**
-     * 获取奖品库存消耗队列
-     *
-     * @return 奖品库存Key信息
-     * @throws InterruptedException 异常
-     */
-    StrategyAwardStockKeyVO takeQueueValue() throws InterruptedException;
 
     /**
      * 获取奖品库存消耗队列

@@ -275,17 +275,11 @@ public class StrategyRepository implements IStrategyRepository {
     }
 
     @Override
-    public StrategyAwardStockKeyVO takeQueueValue() throws InterruptedException {
-        String cacheKey = Constants.RedisKey.STRATEGY_AWARD_COUNT_QUERY_KEY;
-        RBlockingQueue<StrategyAwardStockKeyVO> destinationQueue = redisService.getBlockingQueue(cacheKey);
-        return destinationQueue.poll();
-    }
-
-    @Override
     public StrategyAwardStockKeyVO takeQueueValue(Long strategyId, Integer awardId) throws InterruptedException {
         String cacheKey = Constants.RedisKey.STRATEGY_AWARD_COUNT_QUERY_KEY + Constants.UNDERLINE + strategyId + Constants.UNDERLINE + awardId;
         RBlockingQueue<StrategyAwardStockKeyVO> destinationQueue = redisService.getBlockingQueue(cacheKey);
-        return destinationQueue.poll();
+
+        return destinationQueue.poll();// 为了快速清空 直接用poll() 取不到就break ，不要阻塞等待 浪费连接资源
     }
 
     @Override

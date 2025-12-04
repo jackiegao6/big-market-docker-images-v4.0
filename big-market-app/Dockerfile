@@ -1,6 +1,6 @@
 FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/azul/zulu-openjdk:8u462-jdk
 
-ENV JAVA_OPTS="-Xms6g -Xmx6g -XX:+useG1GC -XX:MaxGCPauseMillis=150 -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/java/app-heap"
+ENV JAVA_OPTS="-Xms6g -Xmx6g -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/java/app-heap"
 ENV PARAMS=""
 
 ENV TZ=PRC

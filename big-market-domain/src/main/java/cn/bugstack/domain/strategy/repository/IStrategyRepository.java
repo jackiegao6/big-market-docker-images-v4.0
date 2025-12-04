@@ -79,10 +79,6 @@ public interface IStrategyRepository {
      */
     void awardStockConsumeSendQueue(StrategyAwardStockKeyVO strategyAwardStockKeyVO);
 
-    /**
-     * 获取奖品库存消费队列
-     */
-    StrategyAwardStockKeyVO takeQueueValue() throws InterruptedException;
 
     /**
      * 获取奖品库存消费队列

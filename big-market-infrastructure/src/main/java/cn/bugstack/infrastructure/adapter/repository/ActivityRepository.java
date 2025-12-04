@@ -301,7 +301,7 @@ public class ActivityRepository implements IActivityRepository {
         String cacheKey = Constants.RedisKey.ACTIVITY_SKU_COUNT_QUERY_KEY + Constants.UNDERLINE + sku;
         RBlockingQueue<ActivitySkuStockKeyVO> destinationQueue = redisService.getBlockingQueue(cacheKey);
         // take 会阻塞直到有数据进入延迟队列
-        return destinationQueue.take();
+        return destinationQueue.poll();
     }
 
     @Override
