@@ -56,13 +56,13 @@ public abstract class AbstractRaffleActivityPartake implements IRaffleActivityPa
             throw new AppException(ResponseCode.ACTIVITY_DATE_ERROR.getCode(), ResponseCode.ACTIVITY_DATE_ERROR.getInfo());
         }
 
-        // 2. 查询未被使用的活动参与订单记录
+        // 2. 第一次走数据库：查询未被使用的活动参与订单记录
         UserRaffleOrderEntity userRaffleOrderEntity = activityRepository.queryNoUsedRaffleOrder(partakeRaffleActivityEntity);
         if (null != userRaffleOrderEntity) {
             return userRaffleOrderEntity;
         }
 
-        // 3. 额度账户过滤&返回账户构建对象
+        // 3. 第二、三、四次走数据库：额度账户过滤&返回账户构建对象
         CreatePartakeOrderAggregate createPartakeOrderAggregate = this.doFilterAccount(userId, activityId, currentDate);
 
         // 4. 构建订单
@@ -71,7 +71,7 @@ public abstract class AbstractRaffleActivityPartake implements IRaffleActivityPa
         // 5. 填充抽奖单实体对象
         createPartakeOrderAggregate.setUserRaffleOrderEntity(userRaffleOrder);
 
-        // 6. 保存聚合对象 - 一个领域内的一个聚合是一个事务操作
+        // 6. 保存聚合对象 - 一个领域内的一个聚合是一个事务操作 todo 改为异步
         activityRepository.saveCreatePartakeOrderAggregate(createPartakeOrderAggregate);
 
         return userRaffleOrder;

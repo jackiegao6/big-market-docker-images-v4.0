@@ -92,7 +92,8 @@ public class ActivityRepository implements IActivityRepository {
         // 优先从缓存获取
         String cacheKey = Constants.RedisKey.ACTIVITY_KEY + activityId;
         ActivityEntity activityEntity = redisService.getValue(cacheKey);
-        if (null != activityEntity) return activityEntity;
+        if (null != activityEntity)
+            return activityEntity;
         // 从库中获取数据
         RaffleActivity raffleActivity = raffleActivityDao.queryRaffleActivityByActivityId(activityId);
         activityEntity = ActivityEntity.builder()
@@ -418,7 +419,7 @@ public class ActivityRepository implements IActivityRepository {
             ActivityAccountDayEntity activityAccountDayEntity = createPartakeOrderAggregate.getActivityAccountDayEntity();
             UserRaffleOrderEntity userRaffleOrderEntity = createPartakeOrderAggregate.getUserRaffleOrderEntity();
 
-            // 统一切换路由，以下事务内的所有操作，都走一个路由
+            // 第5-10次走数据库： 统一切换路由，以下事务内的所有操作，都走一个路由
             dbRouter.doRouter(userId);
             transactionTemplate.execute(status -> {
                 try {

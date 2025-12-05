@@ -155,11 +155,19 @@ public class StrategyRepository implements IStrategyRepository {
 
     @Override
     public String queryStrategyRuleValue(Long strategyId, Integer awardId, String ruleModel) {
+        String cacheKey = Constants.RedisKey.STRATEGY_RULE_KEY_ACTIVITY + ruleModel;
+        String ruleValue = redisService.getValue(cacheKey);
+        if (ruleValue != null)
+            return ruleValue;
+
         StrategyRule strategyRule = new StrategyRule();
         strategyRule.setStrategyId(strategyId);
         strategyRule.setAwardId(awardId);
         strategyRule.setRuleModel(ruleModel);
-        return strategyRuleDao.queryStrategyRuleValue(strategyRule);
+        ruleValue = strategyRuleDao.queryStrategyRuleValue(strategyRule);
+
+        redisService.setValue(cacheKey, ruleValue);
+        return ruleValue;
     }
 
     @Override
@@ -374,7 +382,13 @@ public class StrategyRepository implements IStrategyRepository {
 
     @Override
     public Integer queryActivityAccountTotalUseCount(String userId, Long strategyId) {
-        Long activityId = raffleActivityDao.queryActivityIdByStrategyId(strategyId);
+        String cacheKey = Constants.RedisKey.STRATEGY_2_ACTIVITY + strategyId;
+        Long activityId = redisService.getValue(cacheKey);
+        if (activityId == null){
+            activityId = raffleActivityDao.queryActivityIdByStrategyId(strategyId);
+            redisService.setValue(cacheKey, activityId);
+        }
+
         RaffleActivityAccount raffleActivityAccount = raffleActivityAccountDao.queryActivityAccountByUserId(RaffleActivityAccount.builder()
                 .userId(userId)
                 .activityId(activityId)

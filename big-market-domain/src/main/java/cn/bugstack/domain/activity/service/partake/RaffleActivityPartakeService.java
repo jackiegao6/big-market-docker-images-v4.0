@@ -31,7 +31,7 @@ public class RaffleActivityPartakeService extends AbstractRaffleActivityPartake{
 
     @Override
     protected CreatePartakeOrderAggregate doFilterAccount(String userId, Long activityId, Date currentDate) {
-        // 查询总账户额度
+        // 第二次走数据库：查询总账户额度
         ActivityAccountEntity activityAccountEntity = activityRepository.queryActivityAccountByUserId(userId, activityId);
 
         // 额度判断（只判断总剩余额度）
@@ -42,7 +42,7 @@ public class RaffleActivityPartakeService extends AbstractRaffleActivityPartake{
         String month = dateFormatMonth.format(currentDate);
         String day = dateFormatDay.format(currentDate);
 
-        // 查询月账户额度
+        // 第三次走数据库： 查询月账户额度
         ActivityAccountMonthEntity activityAccountMonthEntity = activityRepository.queryActivityAccountMonthByUserId(userId, activityId, month);
         if (null != activityAccountMonthEntity && activityAccountMonthEntity.getMonthCountSurplus() < 1) {
             throw new AppException(ResponseCode.ACCOUNT_MONTH_QUOTA_ERROR.getCode(), ResponseCode.ACCOUNT_MONTH_QUOTA_ERROR.getInfo());
@@ -59,7 +59,7 @@ public class RaffleActivityPartakeService extends AbstractRaffleActivityPartake{
             activityAccountMonthEntity.setMonthCountSurplus(activityAccountEntity.getMonthCountSurplus());
         }
 
-        // 查询日账户额度
+        // 第四次走数据库： 查询日账户额度
         ActivityAccountDayEntity activityAccountDayEntity = activityRepository.queryActivityAccountDayByUserId(userId, activityId, day);
         if (null != activityAccountDayEntity && activityAccountDayEntity.getDayCountSurplus() <= 0) {
             throw new AppException(ResponseCode.ACCOUNT_DAY_QUOTA_ERROR.getCode(), ResponseCode.ACCOUNT_DAY_QUOTA_ERROR.getInfo());

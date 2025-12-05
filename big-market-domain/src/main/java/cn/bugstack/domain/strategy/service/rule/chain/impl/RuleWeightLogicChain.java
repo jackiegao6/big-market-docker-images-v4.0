@@ -41,18 +41,18 @@ public class RuleWeightLogicChain extends AbstractLogicChain {
     public DefaultChainFactory.StrategyAwardVO logic(String userId, Long strategyId) {
 
         String ruleValue = repository.queryStrategyRuleValue(strategyId, ruleModel());
-        // 1. 解析权重规则值 4000:102,103,104,105 拆解为；4000 -> 4000:102,103,104,105 便于比对判断
+        // 1. 解析权重规则值 10:102,103 70:106,107 1000:104,105
         Map<Integer, String> analyticalValueGroup = getAnalyticalValue(ruleValue);
         if (null == analyticalValueGroup || analyticalValueGroup.isEmpty()) {
-            log.warn("抽奖责任链-权重告警【策略配置权重，但ruleValue未配置相应值】 userId:{} strategyId:{} ruleModel:{}", userId, strategyId, ruleModel());
+            log.error("抽奖责任链-权重告警【策略配置权重，但ruleValue未配置相应值】 userId:{} strategyId:{} ruleModel:{}", userId, strategyId, ruleModel());
             return next().logic(userId, strategyId);
         }
 
-        // 2. 用户分值
-        Integer userScore = repository.queryActivityAccountTotalUseCount(userId, strategyId);
+        // 2. 用户已参与的次数
+        Integer userCount = repository.queryActivityAccountTotalUseCount(userId, strategyId);
 
         // 3. 获取权重对应key
-        String analyticalValue = analytical.getAnalyticalValue(analyticalValueGroup, userScore);
+        String analyticalValue = analytical.getAnalyticalValue(analyticalValueGroup, userCount);
 
         // 4. 权重抽奖
         if (null != analyticalValue) {

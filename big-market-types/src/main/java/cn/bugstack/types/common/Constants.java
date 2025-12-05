@@ -32,6 +32,11 @@ public class Constants {
 
         public static String INIT_USER_ACCOUNT_LOCK = "init_user_account_lock:";
 
+
+        // custom
+        public static String STRATEGY_RULE_KEY_ACTIVITY = "strategy_rule:activity:";
+        public static String STRATEGY_2_ACTIVITY = "strategy2activity:";
+
     }
 
 }
