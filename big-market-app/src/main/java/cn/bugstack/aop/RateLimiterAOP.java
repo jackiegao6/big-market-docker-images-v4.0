@@ -1,10 +1,7 @@
 package cn.bugstack.aop;
 
-import cn.bugstack.trigger.api.dto.ActivityDrawResponseDTO;
-import cn.bugstack.trigger.api.response.Response;
 import cn.bugstack.types.annotations.DCCValue;
 import cn.bugstack.types.annotations.RateLimiterAccessInterceptor;
-import cn.bugstack.types.enums.ResponseCode;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.RateLimiter;
@@ -29,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class RateLimiterAOP {
 
+    // 是DCC控制的限流开关 支持场景热插拔
     @DCCValue("rateLimiterSwitch:close")
     private String rateLimiterSwitch;
 
@@ -37,11 +35,12 @@ public class RateLimiterAOP {
             .expireAfterWrite(1, TimeUnit.MINUTES)
             .build();
 
-    // 个人限频黑名单24h - 分布式业务场景，可以记录到 Redis 中
+    // 多次限流进入黑名单 个人限频黑名单24h - 分布式业务场景，可以记录到 Redis 中
     private final Cache<String, Long> blacklist = CacheBuilder.newBuilder()
             .expireAfterWrite(24, TimeUnit.HOURS)
             .build();
 
+    // RateLimiterAOP 为切面入口 管理所有被@RateLimiterAccessInterceptor自定义注解的方法
     @Pointcut("@annotation(cn.bugstack.types.annotations.RateLimiterAccessInterceptor)")
     public void aopPoint() {
     }

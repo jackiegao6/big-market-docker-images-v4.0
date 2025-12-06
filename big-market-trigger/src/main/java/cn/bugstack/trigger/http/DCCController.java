@@ -1,21 +1,19 @@
 package cn.bugstack.trigger.http;
 
 import cn.bugstack.trigger.api.IDCCService;
-import cn.bugstack.types.enums.ResponseCode;
 import cn.bugstack.trigger.api.response.Response;
+import cn.bugstack.types.enums.ResponseCode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.data.Stat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 
 /**
- * @author Fuzhengwei bugstack.cn @小傅哥
+ * @author gzc
  * @description 动态配置管理
- * @create 2024-07-13 08:57
  */
 @Slf4j
 @RestController()
@@ -31,9 +29,6 @@ public class DCCController implements IDCCService {
 
     /**
      * 更新配置
-     * <p>
-     * curl --request GET --url 'http://localhost:8091/api/v1/raffle/dcc/update_config?key=degradeSwitch&value=open'
-     * curl --request GET --url 'http://localhost:8091/api/v1/raffle/dcc/update_config?key=rateLimiterSwitch&value=open'
      */
     @RequestMapping(value = "update_config", method = RequestMethod.GET)
     @Override

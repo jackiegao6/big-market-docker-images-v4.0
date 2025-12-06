@@ -138,12 +138,12 @@ public class RaffleActivityController implements IRaffleActivityService {
      * fallbackMethod：失败后的回调方法，方法出入参保持一样
      * permitsPerSecond：每秒的访问频次限制
      * blacklistCount：超过多少次都被限制了，还访问的，扔到黑名单里24小时
+     *
+     * 熔断配置
+     * Hystrix组件
      */
     @RateLimiterAccessInterceptor(key = "userId", fallbackMethod = "drawRateLimiterError", permitsPerSecond = 10.0d, blacklistCount = 3)
-    @HystrixCommand(commandProperties = {
-            @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "150")
-    }, fallbackMethod = "drawHystrixError"
-    )
+    @HystrixCommand(commandProperties = {@HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "150")}, fallbackMethod = "drawHystrixError")
     @RequestMapping(value = "draw", method = RequestMethod.POST)
     @Override
     public Response<ActivityDrawResponseDTO> draw(@RequestBody ActivityDrawRequestDTO request) {
@@ -209,6 +209,22 @@ public class RaffleActivityController implements IRaffleActivityService {
                     .info(ResponseCode.UN_ERROR.getInfo())
                     .build();
         }
+    }
+
+    public Response<ActivityDrawResponseDTO> drawRateLimiterError(@RequestBody ActivityDrawRequestDTO request) {
+        log.info("活动抽奖限流 userId:{} activityId:{}", request.getUserId(), request.getActivityId());
+        return Response.<ActivityDrawResponseDTO>builder()
+                .code(ResponseCode.RATE_LIMITER.getCode())
+                .info(ResponseCode.RATE_LIMITER.getInfo())
+                .build();
+    }
+
+    public Response<ActivityDrawResponseDTO> drawHystrixError(@RequestBody ActivityDrawRequestDTO request) {
+        log.info("活动抽奖熔断 userId:{} activityId:{}", request.getUserId(), request.getActivityId());
+        return Response.<ActivityDrawResponseDTO>builder()
+                .code(ResponseCode.HYSTRIX.getCode())
+                .info(ResponseCode.HYSTRIX.getInfo())
+                .build();
     }
 
     @RequestMapping(value = "drawTen", method = RequestMethod.POST)
@@ -283,22 +299,6 @@ public class RaffleActivityController implements IRaffleActivityService {
                     .info(ResponseCode.UN_ERROR.getInfo())
                     .build();
         }
-    }
-
-    public Response<ActivityDrawResponseDTO> drawRateLimiterError(@RequestBody ActivityDrawRequestDTO request) {
-        log.info("活动抽奖限流 userId:{} activityId:{}", request.getUserId(), request.getActivityId());
-        return Response.<ActivityDrawResponseDTO>builder()
-                .code(ResponseCode.RATE_LIMITER.getCode())
-                .info(ResponseCode.RATE_LIMITER.getInfo())
-                .build();
-    }
-
-    public Response<ActivityDrawResponseDTO> drawHystrixError(@RequestBody ActivityDrawRequestDTO request) {
-        log.info("活动抽奖熔断 userId:{} activityId:{}", request.getUserId(), request.getActivityId());
-        return Response.<ActivityDrawResponseDTO>builder()
-                .code(ResponseCode.HYSTRIX.getCode())
-                .info(ResponseCode.HYSTRIX.getInfo())
-                .build();
     }
 
     /**
