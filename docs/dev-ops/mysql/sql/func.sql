@@ -30,6 +30,19 @@ call insert_users2();
 TRUNCATE TABLE big_market_01.raffle_activity_account;
 TRUNCATE TABLE big_market_01.raffle_activity_account_day;
 TRUNCATE TABLE big_market_01.raffle_activity_account_month;
+TRUNCATE TABLE big_market_01.task;
+
 TRUNCATE TABLE big_market_02.raffle_activity_account;
 TRUNCATE TABLE big_market_02.raffle_activity_account_day;
 TRUNCATE TABLE big_market_02.raffle_activity_account_month;
+TRUNCATE TABLE big_market_02.task;
+
+
+
+
+alter table big_market_01.task add index idx_userId_messageId(user_id, message_id);
+alter table big_market_02.task add index idx_userId_messageId(user_id, message_id);
+
+SET GLOBAL innodb_flush_log_at_trx_commit = 2;
+SET GLOBAL sync_binlog = 0;
+

@@ -26,8 +26,11 @@ import cn.bugstack.trigger.api.IRaffleActivityService;
 import cn.bugstack.trigger.api.dto.*;
 import cn.bugstack.trigger.api.response.Response;
 import cn.bugstack.types.annotations.DCCValue;
+import cn.bugstack.types.annotations.RateLimiterAccessInterceptor;
 import cn.bugstack.types.enums.ResponseCode;
 import cn.bugstack.types.exception.AppException;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -129,17 +132,6 @@ public class RaffleActivityController implements IRaffleActivityService {
      *
      * @param request 请求对象
      * @return 抽奖结果
-     * <p>
-     * 接口：<a href="http://localhost:8091/api/v1/raffle/activity/draw">/api/v1/raffle/activity/draw</a>
-     * 入参：{"activityId":100001,"userId":"xiaofuge"}
-     * <p>
-     * curl --request POST \
-     * --url http://localhost:8091/api/v1/raffle/activity/draw \
-     * --header 'content-type: application/json' \
-     * --data '{
-     * "userId":"xiaofuge",
-     * "activityId": 100301
-     * }'
      * 限流配置
      * RateLimiterAccessInterceptor
      * key: 以用户ID作为拦截，这个用户访问次数限制
@@ -147,11 +139,11 @@ public class RaffleActivityController implements IRaffleActivityService {
      * permitsPerSecond：每秒的访问频次限制
      * blacklistCount：超过多少次都被限制了，还访问的，扔到黑名单里24小时
      */
-//    @RateLimiterAccessInterceptor(key = "userId", fallbackMethod = "drawRateLimiterError", permitsPerSecond = 1.0d, blacklistCount = 1)
-//    @HystrixCommand(commandProperties = {
-//            @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "150")
-//    }, fallbackMethod = "drawHystrixError"
-//    )
+    @RateLimiterAccessInterceptor(key = "userId", fallbackMethod = "drawRateLimiterError", permitsPerSecond = 10.0d, blacklistCount = 3)
+    @HystrixCommand(commandProperties = {
+            @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "150")
+    }, fallbackMethod = "drawHystrixError"
+    )
     @RequestMapping(value = "draw", method = RequestMethod.POST)
     @Override
     public Response<ActivityDrawResponseDTO> draw(@RequestBody ActivityDrawRequestDTO request) {
