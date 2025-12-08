@@ -142,8 +142,8 @@ public class RaffleActivityController implements IRaffleActivityService {
      * 熔断配置
      * Hystrix组件
      */
-    @RateLimiterAccessInterceptor(key = "userId", fallbackMethod = "drawRateLimiterError", permitsPerSecond = 10.0d, blacklistCount = 3)
-    @HystrixCommand(commandProperties = {@HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "150")}, fallbackMethod = "drawHystrixError")
+    @RateLimiterAccessInterceptor(key = "userId", fallbackMethod = "drawRateLimiterError", permitsPerSecond = 2.0d, blacklistCount = 5)
+    @HystrixCommand(commandProperties = {@HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "1500")}, fallbackMethod = "drawHystrixError")
     @RequestMapping(value = "draw", method = RequestMethod.POST)
     @Override
     public Response<ActivityDrawResponseDTO> draw(@RequestBody ActivityDrawRequestDTO request) {
@@ -212,7 +212,7 @@ public class RaffleActivityController implements IRaffleActivityService {
     }
 
     public Response<ActivityDrawResponseDTO> drawRateLimiterError(@RequestBody ActivityDrawRequestDTO request) {
-        log.info("活动抽奖限流 userId:{} activityId:{}", request.getUserId(), request.getActivityId());
+        log.warn("活动抽奖限流 userId:{} activityId:{}", request.getUserId(), request.getActivityId());
         return Response.<ActivityDrawResponseDTO>builder()
                 .code(ResponseCode.RATE_LIMITER.getCode())
                 .info(ResponseCode.RATE_LIMITER.getInfo())
@@ -220,7 +220,7 @@ public class RaffleActivityController implements IRaffleActivityService {
     }
 
     public Response<ActivityDrawResponseDTO> drawHystrixError(@RequestBody ActivityDrawRequestDTO request) {
-        log.info("活动抽奖熔断 userId:{} activityId:{}", request.getUserId(), request.getActivityId());
+        log.warn("活动抽奖熔断 userId:{} activityId:{}", request.getUserId(), request.getActivityId());
         return Response.<ActivityDrawResponseDTO>builder()
                 .code(ResponseCode.HYSTRIX.getCode())
                 .info(ResponseCode.HYSTRIX.getInfo())
